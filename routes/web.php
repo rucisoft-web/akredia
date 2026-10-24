@@ -6,9 +6,8 @@ use App\Http\Controllers\ReportController;
 use App\Http\Middleware\InstitutionMember;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/app');
-
-// Halaman pengenalan untuk pimpinan perguruan tinggi dan login tamu ke data demo UNJ.
+// Halaman depan publik, halaman untuk pimpinan perguruan tinggi, dan login tamu ke perguruan tinggi contoh.
+Route::get('/', [DemoController::class, 'home'])->name('home');
 Route::get('/untuk-pimpinan', [DemoController::class, 'pimpinan'])->name('pimpinan');
 Route::get('/demo/tamu', [DemoController::class, 'guest'])->middleware('throttle:30,1')->name('demo.tamu');
 

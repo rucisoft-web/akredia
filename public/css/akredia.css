@@ -276,6 +276,8 @@ span.ak-metric { display: inline; padding: .05rem .35rem; border-radius: 5px; fo
 .ak-login-pimpinan { color: #a26f17; font-weight: 700; text-decoration: none; }
 .ak-login-pimpinan:hover { text-decoration: underline; }
 .dark .ak-login-pimpinan { color: #e7b45a; }
+.ak-login-home { display: block; margin-top: .35rem; font-size: .85rem; color: #64748b; text-decoration: none; }
+.ak-login-home:hover { text-decoration: underline; }
 .ak-login-trust { margin: 1rem 0 0; padding-top: .9rem; border-top: 1px solid var(--ak-line); color: var(--ak-muted); font-size: .75rem; }
 .ak-guest-ribbon { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem 1rem; padding: .4rem 1rem; background: #17406f; color: #e2ecf8; font-size: .8rem; position: relative; z-index: 31; }
 .ak-guest-mode { font-weight: 700; letter-spacing: .02em; }

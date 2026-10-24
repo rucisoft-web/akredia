@@ -19,7 +19,7 @@
 </head>
 <body>
 <div class="top">
-    <a class="brand" href="{{ route('pimpinan') }}"><img src="{{ asset('favicon.svg') }}" width="28" height="28" alt=""> Akredia</a>
+    <a class="brand" href="{{ route('home') }}"><img src="{{ asset('favicon.svg') }}" width="28" height="28" alt=""> Akredia</a>
     <a href="{{ $loginUrl }}">Masuk</a>
 </div>
 <main>@include('pimpinan.content', ['standalone' => true])</main>

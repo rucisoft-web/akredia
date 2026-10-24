@@ -18,5 +18,6 @@
         <p class="ak-login-note">Mode hanya lihat dengan data contoh. Perguruan tinggi dapat diganti kapan saja dari pita di atas layar.</p>
     @endif
     <a class="ak-login-pimpinan" href="{{ route('pimpinan') }}">Akredia untuk Pimpinan Perguruan Tinggi &rarr;</a>
+    <a class="ak-login-home" href="{{ route('home') }}">Kenali fitur Akredia</a>
     <p class="ak-login-trust">Terenkripsi · Akses berbasis peran · Jejak audit</p>
 </div>

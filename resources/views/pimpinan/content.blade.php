@@ -76,11 +76,7 @@
         <p>Cukup peramban, tanpa instalasi. Ada tiga perguruan tinggi contoh dengan <b>data demo</b> yang disusun untuk menjelaskan fitur Akredia: profilnya diambil dari laman resmi, sedangkan angka kinerja, nama staf, dan aktivitas adalah ilustrasi.</p>
         @php($tamu = fn (string $slug) => $guestUrl ? \App\Http\Controllers\DemoController::guestUrl($slug) : null)
         <div class="akp-samples">
-            @foreach ([
-                ['unj', 'Universitas Negeri Jakarta', 'PTN Badan Hukum · jalur Unggul', 'AKI sekitar 75. Satu syarat perlu Unggul (proporsi lektor kepala dan guru besar) belum terpenuhi; SK berakhir Februari 2027.', 'rektor@unj.akredia.test'],
-                ['binus', 'Universitas Bina Nusantara', 'PTS Akademik · jalur Unggul', 'AKI sekitar 81. Semua syarat perlu terpenuhi; tim menuntaskan bukti hilirisasi riset sebelum unggah Januari 2027.', 'rektor@binus.akredia.test'],
-                ['polban', 'Politeknik Negeri Bandung', 'PTN Vokasi · jalur Unggul', 'AKI sekitar 68 dengan tenggat sebulan. Syarat perlu proporsi prodi Unggul belum terpenuhi; dua prodi segera habis masa akreditasinya.', 'direktur@polban.akredia.test'],
-            ] as [$slug, $name, $kind, $story, $email])
+            @foreach (\App\Http\Controllers\DemoController::STORIES as $slug => [$name, $kind, $story, $email])
                 <div class="akp-sample">
                     <b>{{ $name }}</b><small>{{ $kind }}</small>
                     <span>{{ $story }}</span>

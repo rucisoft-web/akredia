@@ -12,12 +12,28 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
- * Halaman publik "Akredia untuk Pimpinan Perguruan Tinggi" dan login tamu ke perguruan tinggi contoh.
+ * Halaman publik (halaman depan dan "Akredia untuk Pimpinan Perguruan Tinggi") serta login tamu ke perguruan tinggi contoh.
  */
 class DemoController extends Controller
 {
     /** Urutan kartu di halaman login. */
     public const ORDER = ['unj', 'binus', 'polban'];
+
+    /** Kartu perguruan tinggi contoh di halaman publik: nama, jenis dan jalur, skenario, akun pimpinan. */
+    public const STORIES = [
+        'unj' => ['Universitas Negeri Jakarta', 'PTN Badan Hukum · jalur Unggul', 'AKI sekitar 75. Satu syarat perlu Unggul (proporsi lektor kepala dan guru besar) belum terpenuhi; SK berakhir Februari 2027.', 'rektor@unj.akredia.test'],
+        'binus' => ['Universitas Bina Nusantara', 'PTS Akademik · jalur Unggul', 'AKI sekitar 81. Semua syarat perlu terpenuhi; tim menuntaskan bukti hilirisasi riset sebelum unggah Januari 2027.', 'rektor@binus.akredia.test'],
+        'polban' => ['Politeknik Negeri Bandung', 'PTN Vokasi · jalur Unggul', 'AKI sekitar 68 dengan tenggat sebulan. Syarat perlu proporsi prodi Unggul belum terpenuhi; dua prodi segera habis masa akreditasinya.', 'direktur@polban.akredia.test'],
+    ];
+
+    public function home(): View
+    {
+        return view('landing', [
+            'guestUrl' => self::guestUrl(),
+            'loginUrl' => self::loginUrl(),
+            'samples' => self::samples(),
+        ]);
+    }
 
     public function pimpinan(): View
     {

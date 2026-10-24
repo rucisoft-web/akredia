@@ -119,9 +119,15 @@ Skenario: 91 prodi dengan sekitar 1.190 dosen tetap dan 43 ribu mahasiswa. Satu 
 
 ### Masuk sebagai tamu
 
-Halaman login menampilkan pilihan **Masuk sebagai Tamu** dengan kartu tiga perguruan tinggi contoh (UNJ, BINUS, POLBAN). Tamu masuk sebagai Pengamat (hanya lihat), tidak dapat mengubah data maupun membuka halaman profil, dan dapat berganti perguruan tinggi dari pita di atas layar. Setiap halaman institusi contoh menampilkan penanda **DATA DEMO**. Akun tamu bersama `tamu@demo.akredia.test` dibuat oleh `php artisan akredia:demo`; matikan pilihan tamu dengan `AKREDIA_DEMO_GUEST=false`.
+Halaman login menampilkan pilihan **Masuk sebagai Tamu** dengan kartu tiga perguruan tinggi contoh (UNJ, BINUS, POLBAN). Tamu masuk sebagai Pengamat (hanya lihat): tombol buat, ubah, hapus, dan tindakan pengubah data lain disembunyikan, halaman profil tidak dapat dibuka, dan dapat berganti perguruan tinggi dari pita di atas layar. Setiap halaman institusi contoh menampilkan penanda **DATA DEMO**. Akun tamu bersama `tamu@demo.akredia.test` dibuat oleh `php artisan akredia:demo`; matikan pilihan tamu dengan `AKREDIA_DEMO_GUEST=false`.
 
 ![Login tamu](docs/login-tamu.png)
+
+### Halaman depan
+
+Alamat `/` kini menampilkan halaman depan publik: masalah yang sering menghambat persiapan, 12 fitur utama, sorotan Simulasi Penilaian, editor LED, dan Rekonsiliasi PD Dikti (bertanda DATA CONTOH), kartu tiga perguruan tinggi contoh dengan tombol **Masuk sebagai tamu** per kampus, keamanan dan AI, pemasangan cPanel, serta tanya jawab. Bila akun tamu belum ada, bagian data contoh disembunyikan dan tombol mengarah ke login. Pengguna yang sudah masuk melihat tombol **Buka aplikasi**.
+
+![Halaman depan](docs/halaman-depan.png)
 
 Halaman pengenalan **Akredia untuk Pimpinan Perguruan Tinggi** tersedia publik di `/untuk-pimpinan` (ditautkan dari halaman login) dan sebagai sub menu pertama grup *Panduan Pimpinan* di aplikasi.
 

@@ -197,7 +197,7 @@ Muat satu saja dengan `php artisan akredia:demo unj` (atau `binus`, `polban`). C
 
 Pengunjung dapat melihat ketiga perguruan tinggi contoh tanpa akun lewat pilihan **Masuk sebagai Tamu** di halaman login (akun bersama `tamu@demo.akredia.test`, hanya lihat), lalu berganti perguruan tinggi dari pita di atas layar. Akun tamu dibuat oleh `php artisan akredia:demo`. Matikan pilihan tamu dengan `AKREDIA_DEMO_GUEST=false`.
 
-Halaman publik untuk pimpinan perguruan tinggi: `https://domain-anda/untuk-pimpinan`.
+Halaman depan `https://domain-anda/` menjelaskan fitur Akredia dan menampilkan tombol **Masuk sebagai tamu** untuk tiap perguruan tinggi contoh. Halaman publik untuk pimpinan perguruan tinggi: `https://domain-anda/untuk-pimpinan`.
 
 Hapus data contoh kapan saja dengan `php artisan akredia:remove-demo --force`.
 
