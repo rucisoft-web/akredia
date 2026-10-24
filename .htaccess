@@ -1,8 +1,9 @@
-# Pengaman bila folder program terlanjur diletakkan di public_html:
-# semua permintaan diarahkan ke folder public, berkas sensitif ditolak.
+# Dipakai hanya bila document root mengarah ke folder program ini (bukan ke public/).
+# Semua permintaan diteruskan ke public/, sehingga .env, vendor, dan storage tidak
+# pernah disajikan langsung. Cara yang disarankan tetap: document root = akredia/public.
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteRule ^(\.env|composer\.(json|lock)|artisan|vendor/|storage/|database/|bootstrap/|config/|routes/|app/|tests/) - [F,L]
+    RewriteCond %{REQUEST_URI} !^/public/
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 <FilesMatch "^\.env">

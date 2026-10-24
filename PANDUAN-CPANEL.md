@@ -69,7 +69,7 @@ $app = require_once __DIR__.'/../akredia/bootstrap/app.php';
 
 3. Setiap kali memperbarui program, salin ulang isi `akredia/public` ke `public_html` (kecuali `index.php` yang sudah diedit).
 
-> Jangan mengekstrak seluruh program langsung ke `public_html`. Bila terlanjur, `.htaccess` di folder program menolak akses ke `.env`, `vendor`, dan `storage`, tetapi tetap pindahkan secepatnya.
+> Jangan mengekstrak seluruh program langsung ke `public_html`. Bila terlanjur, `.htaccess` di folder program meneruskan semua permintaan ke `public/` sehingga `.env`, `vendor`, dan `storage` tidak tersaji, tetapi tetap pindahkan secepatnya.
 
 ## 5. Isi file `.env`
 
@@ -218,6 +218,7 @@ Selalu **backup database dan folder `storage/app/private`** (berkas bukti) sebel
 | `Specified key was too long` | Database bukan utf8mb4 atau MySQL terlalu lama. Pakai MySQL 8 / MariaDB 10.6+. |
 | Admin tidak bisa masuk padahal sandi benar | Sandi di `.env` mengandung `#` tanpa tanda kutip. Beri kutip, lalu `php artisan akredia:create-admin email --password='...'`. |
 | Halaman tampil tanpa gaya | Document root belum ke `akredia/public`, atau isi `public` (termasuk folder `css/filament` dan `js/filament`) belum tersalin lengkap. |
+| `403 Forbidden` / *Access to this resource on the server is denied* | Arahkan Document Root ke `akredia/public`. Pastikan izin folder 755 dan berkas 644, serta `public/index.php` dan `public/.htaccess` ada. Bila memakai paket sebelum 24 Oktober 2026 dan document root mengarah ke folder `akredia`, ganti `akredia/.htaccess` dengan versi terbaru. |
 | Semua halaman selain beranda 404 | `.htaccess` dari `public` belum ikut tersalin. |
 | `419 Page Expired` saat login | `APP_URL` harus sama persis dengan alamat yang dibuka. Bila belum SSL, hapus `SESSION_SECURE_COOKIE=true`. |
 | Unggah bukti gagal | Naikkan `upload_max_filesize` dan `post_max_size` (misalnya 32M) di *MultiPHP INI Editor*; aktifkan ekstensi **fileinfo**. |
