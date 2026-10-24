@@ -52,7 +52,9 @@ class StudyProgram extends Model
 
     public function currentAccreditation(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->hasOne(ProgramAccreditation::class)->where('is_current', true)->latestOfMany('valid_until');
+        // Batasan is_current harus berada di dalam agregat; bila tidak, akreditasi internasional yang
+        // berlaku lebih lama menutupi akreditasi nasional yang berlaku.
+        return $this->hasOne(ProgramAccreditation::class)->ofMany(['valid_until' => 'max'], fn ($query) => $query->where('is_current', true));
     }
 
     public function label(): string

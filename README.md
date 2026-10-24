@@ -76,6 +76,27 @@ Kata sandi semua akun demo: `Demo#2026akredia` (atau nilai `AKREDIA_DEMO_PASSWOR
 | Pemilik data | `data.feb@akredia.test` |
 | Pengamat (Ketua Yayasan) | `pengamat@akredia.test` |
 
+### Demo Universitas Negeri Jakarta
+
+`php artisan akredia:demo unj` memuat **Universitas Negeri Jakarta** di `/app/unj`: PTN Badan Hukum (PP 31/2024) yang menyiapkan *Reakreditasi Institusi 2027 jalur Unggul* karena SK peringkat Unggul berlaku sampai 2 Februari 2027.
+
+- **Diambil dari unj.ac.id (Oktober 2026):** identitas dan kode PT, status PTN-BH, Rektor dan empat Wakil Rektor, visi-misi, 8 fakultas dan Sekolah Pascasarjana, struktur direktorat, riwayat akreditasi institusi, 59 prodi terakreditasi internasional (ASIIN, AQAS, FIBAA), serta capaian QS/THE yang dijadikan bukti unggulan.
+- **Data ilustrasi:** nama pejabat di bawah Wakil Rektor, dosen, angka mahasiswa, publikasi, survei, temuan AMI, risiko, tugas, dan narasi LED. Data ini bukan data resmi UNJ.
+
+Skenario: 91 prodi dengan sekitar 1.190 dosen tetap dan 43 ribu mahasiswa. Satu syarat perlu jalur Unggul (11B, proporsi lektor kepala dan guru besar) sengaja belum terpenuhi. Prodi Gizi dan Bisnis Digital akreditasinya hampir berakhir, dan data mahasiswa aktif masih selisih dengan PDDikti.
+
+![Dasbor UNJ](docs/demo-unj-dasbor.png)
+
+| Peran | Email (`@unj.akredia.test`) |
+|---|---|
+| Rektor | `rektor@` |
+| Wakil Rektor I–IV | `wr1@`, `wr2@`, `wr3@`, `wr4@` |
+| Kepala SPM / Ketua Tim Reakreditasi | `manajer@` |
+| Administrator | `admin.pt@` |
+| Reviewer, asesor internal | `reviewer@`, `reviewer2@`, `asesor@` |
+| PIC | `pic.lpm@`, `pic.akademik@`, `pic.sdm@`, `pic.keuangan@`, `pic.lppm@`, `pic.kemahasiswaan@`, `pic.sarpras@`, `pic.perencanaan@`, `pic.kerjasama@`, `pic.sekretariat@`, `pic.spi@`, `pic.tik@`, `pic.satgas@` |
+| Pengamat (MWA) | `pengamat@` |
+
 Hapus data contoh kapan saja: `php artisan akredia:remove-demo`.
 
 ## Perintah artisan
@@ -84,7 +105,7 @@ Hapus data contoh kapan saja: `php artisan akredia:remove-demo`.
 |---|---|
 | `akredia:create-admin` | Buat atau perbarui administrator platform. |
 | `akredia:doctor` | Periksa PHP, ekstensi, database, izin folder, aset, dan cron. |
-| `akredia:demo` / `akredia:remove-demo` | Muat atau hapus data contoh. |
+| `akredia:demo [unm\|unj\|semua]` / `akredia:remove-demo` | Muat atau hapus data contoh. |
 | `akredia:snapshot` | Hitung ulang AKI dan rekam snapshot harian (terjadwal 01.00). |
 | `akredia:reminders` | Pengingat tenggat dan eskalasi tugas terlambat (terjadwal 07.00). |
 | `akredia:check-links` | Periksa tautan bukti dan hyperlink LED (terjadwal mingguan). |

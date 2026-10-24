@@ -292,7 +292,7 @@
         </section>
 
         <section class="ak-panel">
-            <h3>Akreditasi program studi <small>{{ $d['programs']['unggul'] }}/{{ $d['programs']['total'] }} unggul/A</small></h3>
+            <h3>Akreditasi program studi <small>{{ $d['programs']['unggul'] }}/{{ $d['programs']['total'] }} unggul/A @if ($d['programs']['international'] ?? 0) · {{ $d['programs']['international'] }} internasional @endif</small></h3>
             <div class="ak-chart h-200">
                 <canvas data-ak-chart="{{ json_encode([
                     'type' => 'doughnut',

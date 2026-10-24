@@ -103,7 +103,7 @@ MAIL_FROM_ADDRESS="akredia@kampusanda.ac.id"
 AKREDIA_ADMIN_EMAIL=admin@kampusanda.ac.id
 AKREDIA_ADMIN_PASSWORD="SandiSementara#2026"
 
-# Data contoh Universitas Nusantara Mandiri. false untuk pemakaian sungguhan.
+# Data contoh (Universitas Nusantara Mandiri dan Universitas Negeri Jakarta). false untuk pemakaian sungguhan.
 AKREDIA_DEMO=false
 
 # Asisten AI untuk reviu narasi LED (opsional, boleh kosong)
@@ -187,7 +187,12 @@ Tanpa cron aplikasi tetap berjalan; dasbor dihitung ulang saat tombol *Perbarui 
 
 ### Situs demo / promosi
 
-Isi `AKREDIA_DEMO=true` lalu jalankan `php artisan akredia:demo` dan `php artisan optimize`. Data contoh **Universitas Nusantara Mandiri** (fiktif) dibuat di `/app/unm` beserta akun demo per peran, misalnya `rektor@akredia.test`, `manajer@akredia.test`, `pic.lpm@akredia.test`, `reviewer@akredia.test`, `asesor@akredia.test`, dan `pengamat@akredia.test` (daftar lengkap di README). Kata sandi semua akun: nilai `AKREDIA_DEMO_PASSWORD` (bawaan `Demo#2026akredia`).
+Isi `AKREDIA_DEMO=true` lalu jalankan `php artisan akredia:demo` dan `php artisan optimize`. Ada dua institusi contoh:
+
+- **Universitas Nusantara Mandiri** (fiktif, PTS) di `/app/unm`, akun `rektor@akredia.test`, `manajer@akredia.test`, `pic.lpm@akredia.test`, dan seterusnya.
+- **Universitas Negeri Jakarta** (PTN-BH, reakreditasi jalur Unggul) di `/app/unj`, akun `rektor@unj.akredia.test`, `wr1@unj.akredia.test`, `manajer@unj.akredia.test`, dan seterusnya.
+
+Muat salah satu saja dengan `php artisan akredia:demo unm` atau `php artisan akredia:demo unj` (sekitar 40 detik). Daftar akun lengkap ada di README. Kata sandi semua akun: nilai `AKREDIA_DEMO_PASSWORD` (bawaan `Demo#2026akredia`).
 
 Hapus data contoh kapan saja dengan `php artisan akredia:remove-demo --force`.
 

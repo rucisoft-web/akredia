@@ -26,7 +26,7 @@ class Decision extends Model
         return $this->belongsTo(AccreditationProject::class, 'accreditation_project_id');
     }
 
-    public const FORUMS = ['rapat_pimpinan' => 'Rapat Pimpinan', 'senat' => 'Rapat Senat', 'rtm' => 'Rapat Tinjauan Manajemen', 'yayasan' => 'Badan Penyelenggara', 'taskforce' => 'Rapat Tim Taskforce'];
+    public const FORUMS = ['rapat_pimpinan' => 'Rapat Pimpinan', 'senat' => 'Rapat Senat', 'rtm' => 'Rapat Tinjauan Manajemen', 'yayasan' => 'Badan Penyelenggara', 'mwa' => 'Majelis Wali Amanat', 'taskforce' => 'Rapat Tim Taskforce'];
 
     public function tasks(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

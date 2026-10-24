@@ -87,35 +87,22 @@ class DemoSeeder extends Seeder
 
     protected int $ts = 2025;
 
+    /** Domain email akun demo; tiap institusi contoh memakai subdomain sendiri. */
+    protected string $emailDomain = 'akredia.test';
+
+    /** Singkatan institusi untuk nomor SK dan teks contoh. */
+    protected string $short = 'UNM';
+
     public function run(): void
     {
         mt_srand(2027);
         AuditLog::$enabled = false;
 
-        if ($old = Institution::where('slug', self::SLUG)->first()) {
+        if ($old = Institution::where('slug', static::SLUG)->first()) {
             $old->delete();
         }
 
-        $this->pt = Institution::create([
-            'name' => 'Universitas Nusantara Mandiri',
-            'slug' => self::SLUG,
-            'code' => '041099',
-            'type' => 'pts_akademik',
-            'legal_entity' => 'Yayasan Pendidikan Nusantara Mandiri',
-            'sk_number' => '112/KPT/I/2003',
-            'sk_date' => '2003-07-14',
-            'first_intake_year' => 2003,
-            'city' => 'Bandung',
-            'address' => 'Jl. Cendekia Raya No. 27, Bandung 40135',
-            'website' => 'https://www.unm-demo.ac.id',
-            'email' => 'info@unm-demo.ac.id',
-            'vision' => 'Menjadi universitas kewirausahaan berbasis teknologi yang unggul di Asia Tenggara pada 2035.',
-            'mission_focus' => 'Pendidikan berbasis kewirausahaan dan teknologi terapan; penelitian terapan untuk UMKM dan industri kreatif; pengabdian berbasis pemberdayaan desa digital.',
-            'last_accreditation_rank' => 'Baik Sekali',
-            'last_accreditation_sk' => '1543/SK/BAN-PT/Ak.KP/PT/VIII/2022',
-            'last_accreditation_until' => '2027-08-15',
-            'is_demo' => true,
-        ]);
+        $this->pt = Institution::create($this->institutionAttributes());
 
         app(CurrentInstitution::class)->set($this->pt);
 
@@ -133,7 +120,32 @@ class DemoSeeder extends Seeder
         AuditLog::$enabled = true;
         app(CurrentInstitution::class)->set(null);
 
-        $this->command?->info('Data contoh Universitas Nusantara Mandiri dimuat. Kata sandi akun demo: '.config('akredia.demo.password'));
+        $this->command?->info("Data contoh {$this->pt->name} dimuat. Kata sandi akun demo: ".config('akredia.demo.password'));
+    }
+
+    /** @return array<string, mixed> */
+    protected function institutionAttributes(): array
+    {
+        return [
+            'name' => 'Universitas Nusantara Mandiri',
+            'slug' => static::SLUG,
+            'code' => '041099',
+            'type' => 'pts_akademik',
+            'legal_entity' => 'Yayasan Pendidikan Nusantara Mandiri',
+            'sk_number' => '112/KPT/I/2003',
+            'sk_date' => '2003-07-14',
+            'first_intake_year' => 2003,
+            'city' => 'Bandung',
+            'address' => 'Jl. Cendekia Raya No. 27, Bandung 40135',
+            'website' => 'https://www.unm-demo.ac.id',
+            'email' => 'info@unm-demo.ac.id',
+            'vision' => 'Menjadi universitas kewirausahaan berbasis teknologi yang unggul di Asia Tenggara pada 2035.',
+            'mission_focus' => 'Pendidikan berbasis kewirausahaan dan teknologi terapan; penelitian terapan untuk UMKM dan industri kreatif; pengabdian berbasis pemberdayaan desa digital.',
+            'last_accreditation_rank' => 'Baik Sekali',
+            'last_accreditation_sk' => '1543/SK/BAN-PT/Ak.KP/PT/VIII/2022',
+            'last_accreditation_until' => '2027-08-15',
+            'is_demo' => true,
+        ];
     }
 
     // ------------------------------------------------------------------ organisasi
@@ -221,8 +233,27 @@ class DemoSeeder extends Seeder
     {
         $password = config('akredia.demo.password', 'Demo#2026akredia');
 
-        // [kunci, email, nama, peran, unit, jabatan]
-        $people = [
+        foreach ($this->people() as [$key, $local, $name, $role, $unit, $title]) {
+            $user = User::updateOrCreate(['email' => "{$local}@{$this->emailDomain}"], [
+                'name' => $name, 'password' => $password, 'is_active' => true,
+                'last_login_at' => now()->subHours(mt_rand(1, 240)),
+            ]);
+            Membership::create(['user_id' => $user->id, 'unit_id' => $this->units[$unit]->id, 'role' => $role, 'position_title' => $title]);
+            $this->users[$key] = $user;
+        }
+
+        // Administrator platform juga dapat masuk ke PT contoh sebagai admin.
+        if ($email = config('akredia.admin.email')) {
+            if ($admin = User::where('email', $email)->first()) {
+                Membership::create(['user_id' => $admin->id, 'unit_id' => $this->units['lpm']->id, 'role' => 'admin', 'position_title' => 'Administrator platform']);
+            }
+        }
+    }
+
+    /** @return list<array{string, string, string, string, string, string}> [kunci, email, nama, peran, unit, jabatan] */
+    protected function people(): array
+    {
+        return [
             ['admin', 'admin.pt', 'Rina Kartikasari, M.Kom.', 'admin', 'tik', 'Kepala UPT TIK dan Pangkalan Data'],
             ['rektor', 'rektor', 'Prof. Dr. Ir. Hendra Wiratmaja, M.T.', 'pimpinan', 'rektorat', 'Rektor'],
             ['wr1', 'wr1', 'Dr. Lestari Handayani, M.Pd.', 'pimpinan', 'rektorat', 'Wakil Rektor Bidang Akademik'],
@@ -244,31 +275,51 @@ class DemoSeeder extends Seeder
             ['data.feb', 'data.feb', 'Yoga Pratama, S.E., M.Ak.', 'pemilik_data', 'feb', 'Operator Data FEB'],
             ['pengamat', 'pengamat', 'H. Darmawan Kusuma, S.E., M.M.', 'pengamat', 'rektorat', 'Ketua Yayasan'],
         ];
-
-        foreach ($people as [$key, $local, $name, $role, $unit, $title]) {
-            $user = User::updateOrCreate(['email' => "{$local}@akredia.test"], [
-                'name' => $name, 'password' => $password, 'is_active' => true,
-                'last_login_at' => now()->subHours(mt_rand(1, 240)),
-            ]);
-            Membership::create(['user_id' => $user->id, 'unit_id' => $this->units[$unit]->id, 'role' => $role, 'position_title' => $title]);
-            $this->users[$key] = $user;
-        }
-
-        // Administrator platform juga dapat masuk ke PT contoh sebagai admin.
-        if ($email = config('akredia.admin.email')) {
-            if ($admin = User::where('email', $email)->first()) {
-                Membership::create(['user_id' => $admin->id, 'unit_id' => $this->units['lpm']->id, 'role' => 'admin', 'position_title' => 'Administrator platform']);
-            }
-        }
     }
 
     // ------------------------------------------------------------------ data kinerja
 
+    /**
+     * Parameter data kinerja yang berbeda antar-institusi contoh.
+     *
+     * @return array<string, mixed>
+     */
+    protected function performanceProfile(): array
+    {
+        return [
+            'nidn_start' => 410000001,
+            'doctor_pct' => 26,
+            'professor_pct' => 14,
+            'events' => ['Kompetisi Debat Bahasa Inggris', 'Lomba Karya Tulis Ilmiah', 'Gemastik', 'Kompetisi Bisnis Plan', 'PKM Nasional', 'Hackathon Smart City', 'Pekan Olahraga Mahasiswa', 'Festival Film Pendek', 'Lomba Peradilan Semu', 'Kompetisi Robotik', 'Olimpiade Akuntansi', 'Kontes Desain Arsitektur', 'Kejuaraan Pencak Silat', 'Lomba Inovasi Keperawatan'],
+            'achievement_base' => 18,
+            'topics' => ['UMKM digital', 'rantai pasok halal', 'pembelajaran daring', 'keamanan siber', 'beton ramah lingkungan', 'fintech syariah', 'kecerdasan buatan untuk pertanian', 'tata kelola desa digital', 'literasi keuangan', 'perilaku konsumen generasi Z', 'energi surya atap', 'kesehatan mental mahasiswa', 'hukum perlindungan data pribadi', 'pariwisata berkelanjutan', 'kurikulum merdeka', 'deteksi dini stunting', 'Internet of Things', 'analitik big data', 'ekonomi sirkular', 'manajemen bencana'],
+            'places' => ['Jawa Barat', 'Indonesia', 'kota Bandung', 'Asia Tenggara', 'perguruan tinggi swasta'],
+            'publication_types' => ['jurnal_intl_bereputasi' => 14, 'jurnal_intl' => 10, 'jurnal_nas_terakreditasi' => 36, 'jurnal_nas' => 18, 'seminar_intl' => 10, 'seminar_nas' => 8, 'media_massa' => 4],
+            'publication_base' => 140,
+            'publication_growth' => 28,
+            'venues' => ['International Journal of Applied Sciences', 'Jurnal Ilmiah Nusantara'],
+            'ip_base' => 6,
+            'ip_adopter' => 'CV Mitra Usaha Bersama',
+            'recognitions' => ['Narasumber seminar nasional', 'Mitra bestari jurnal internasional', 'Juri kompetisi inovasi', 'Visiting lecturer Universiti Malaya', 'Staf ahli DPRD Provinsi', 'Penghargaan dosen berprestasi'],
+            'recognition_base' => 7,
+            'grant_base' => 14,
+            'grant_scale' => 1,
+            'auditors' => [2021 => 'KAP Rahardjo, Wibisono & Rekan', 2022 => 'KAP Rahardjo, Wibisono & Rekan', 2023 => 'KAP Santoso Halim & Rekan', 2024 => 'KAP Santoso Halim & Rekan', 2025 => 'KAP Santoso Halim & Rekan'],
+            'survey_population' => ['mahasiswa' => 9800, 'dosen' => 330, 'tendik' => 260, 'mitra' => 85, 'lulusan' => 2100, 'pengguna' => 240],
+            'survey_open_population' => 10100,
+            'tracer_graduates' => 1850,
+            'tracer_growth' => 70,
+            'employer_respondents' => 96,
+            'employer_follow_up' => 'Program English Proficiency wajib dan sertifikasi TOEFL ITP mulai 2025.',
+        ];
+    }
+
     protected function seedPerformanceData(): void
     {
+        $p = $this->performanceProfile();
         $first = ['Ahmad', 'Budi', 'Citra', 'Dewi', 'Eko', 'Fitri', 'Gilang', 'Hana', 'Indra', 'Joko', 'Kartika', 'Lukman', 'Maya', 'Nanda', 'Oki', 'Putri', 'Rahmat', 'Sari', 'Taufik', 'Umi', 'Vina', 'Wahyu', 'Yanti', 'Zainal', 'Agung', 'Bayu', 'Dian', 'Erni', 'Farid', 'Galih', 'Hesti', 'Irfan', 'Kurnia', 'Lia', 'Mega', 'Nurul', 'Prasetyo', 'Rizki', 'Sinta', 'Tri', 'Wawan', 'Yudi', 'Anisa', 'Bagus', 'Desi', 'Ferry', 'Gita', 'Heru', 'Intan', 'Rudi'];
         $last = ['Saputra', 'Wijaya', 'Kusuma', 'Pratama', 'Hidayat', 'Nugroho', 'Lestari', 'Santoso', 'Purnomo', 'Rahayu', 'Setiawan', 'Gunawan', 'Siregar', 'Nasution', 'Simanjuntak', 'Wibowo', 'Hakim', 'Susanto', 'Permana', 'Kurniawan', 'Halim', 'Utami', 'Firmansyah', 'Ramadhan', 'Maulana', 'Suryadi', 'Handoko', 'Anggraini', 'Fauzi', 'Sembiring'];
-        $nidn = 410000001;
+        $nidn = $p['nidn_start'];
         $lecturers = collect();
 
         foreach ($this->programs as $key => $program) {
@@ -277,10 +328,10 @@ class DemoSeeder extends Seeder
             for ($i = 0; $i < $count + max(2, intdiv($count, 3)); $i++) {
                 $permanent = $i < $count;
                 $roll = mt_rand(1, 100);
-                $degree = $permanent ? ($roll <= 26 ? 'S3' : 'S2') : (mt_rand(1, 100) <= 10 ? 'S3' : 'S2');
+                $degree = $permanent ? ($roll <= $p['doctor_pct'] ? 'S3' : 'S2') : (mt_rand(1, 100) <= 10 ? 'S3' : 'S2');
                 $rankRoll = mt_rand(1, 100);
                 $rank = ! $permanent ? 'none' : match (true) {
-                    $rankRoll <= ($degree === 'S3' ? 14 : 1) => 'gb',
+                    $rankRoll <= ($degree === 'S3' ? $p['professor_pct'] : 1) => 'gb',
                     $rankRoll <= ($degree === 'S3' ? 60 : 17) => 'lk',
                     $rankRoll <= 60 => 'l',
                     $rankRoll <= 87 => 'aa',
@@ -334,10 +385,10 @@ class DemoSeeder extends Seeder
         }
 
         $programIds = collect($this->programs)->pluck('id')->all();
-        $events = ['Kompetisi Debat Bahasa Inggris', 'Lomba Karya Tulis Ilmiah', 'Gemastik', 'Kompetisi Bisnis Plan', 'PKM Nasional', 'Hackathon Smart City', 'Pekan Olahraga Mahasiswa', 'Festival Film Pendek', 'Lomba Peradilan Semu', 'Kompetisi Robotik', 'Olimpiade Akuntansi', 'Kontes Desain Arsitektur', 'Kejuaraan Pencak Silat', 'Lomba Inovasi Keperawatan'];
+        $events = $p['events'];
 
         for ($y = 2021; $y <= $this->ts; $y++) {
-            for ($i = 0; $i < 18 + ($y - 2021) * 4; $i++) {
+            for ($i = 0; $i < $p['achievement_base'] + ($y - 2021) * 4; $i++) {
                 $levelRoll = mt_rand(1, 100);
                 Achievement::create([
                     'study_program_id' => $programIds[array_rand($programIds)], 'year' => $y,
@@ -350,59 +401,59 @@ class DemoSeeder extends Seeder
             }
         }
 
-        $topics = ['UMKM digital', 'rantai pasok halal', 'pembelajaran daring', 'keamanan siber', 'beton ramah lingkungan', 'fintech syariah', 'kecerdasan buatan untuk pertanian', 'tata kelola desa digital', 'literasi keuangan', 'perilaku konsumen generasi Z', 'energi surya atap', 'kesehatan mental mahasiswa', 'hukum perlindungan data pribadi', 'pariwisata berkelanjutan', 'kurikulum merdeka', 'deteksi dini stunting', 'Internet of Things', 'analitik big data', 'ekonomi sirkular', 'manajemen bencana'];
+        $topics = $p['topics'];
         $prefix = ['Analisis', 'Model', 'Pengembangan', 'Evaluasi', 'Rancang bangun', 'Pengaruh', 'Strategi', 'Kajian'];
-        $types = ['jurnal_intl_bereputasi' => 14, 'jurnal_intl' => 10, 'jurnal_nas_terakreditasi' => 36, 'jurnal_nas' => 18, 'seminar_intl' => 10, 'seminar_nas' => 8, 'media_massa' => 4];
+        $types = $p['publication_types'];
 
         for ($y = 2021; $y <= $this->ts; $y++) {
-            $n = 140 + ($y - 2021) * 28;
+            $n = $p['publication_base'] + ($y - 2021) * $p['publication_growth'];
 
             for ($i = 0; $i < $n; $i++) {
                 $type = $this->weighted($types);
                 Publication::create([
                     'lecturer_id' => $permanentIds[array_rand($permanentIds)], 'year' => $y,
-                    'title' => $prefix[array_rand($prefix)].' '.$topics[array_rand($topics)].' di '.['Jawa Barat', 'Indonesia', 'kota Bandung', 'Asia Tenggara', 'perguruan tinggi swasta'][mt_rand(0, 4)],
+                    'title' => $prefix[array_rand($prefix)].' '.$topics[array_rand($topics)].' di '.$p['places'][array_rand($p['places'])],
                     'type' => $type, 'category' => mt_rand(1, 100) <= 78 ? 'penelitian' : 'pkm',
-                    'venue' => str_contains($type, 'intl') ? 'International Journal of Applied Sciences' : 'Jurnal Ilmiah Nusantara',
+                    'venue' => $p['venues'][str_contains($type, 'intl') ? 0 : 1],
                     'citations' => str_contains($type, 'jurnal') ? mt_rand(0, ($this->ts - $y + 1) * 9) : 0,
                 ]);
             }
 
-            for ($i = 0; $i < 6 + ($y - 2021) * 2; $i++) {
+            for ($i = 0; $i < $p['ip_base'] + ($y - 2021) * 2; $i++) {
                 IpRight::create([
                     'lecturer_id' => $permanentIds[array_rand($permanentIds)], 'year' => $y,
                     'title' => ['Aplikasi', 'Modul', 'Sistem', 'Alat', 'Buku ajar'][mt_rand(0, 4)].' '.$topics[array_rand($topics)],
                     'ip_type' => ['hak_cipta', 'hak_cipta', 'hak_cipta', 'paten_sederhana', 'paten', 'merek', 'desain_industri'][mt_rand(0, 6)],
                     'number' => 'EC'.$y.sprintf('%07d', mt_rand(1, 9999999)), 'is_adopted' => mt_rand(1, 100) <= 30,
-                    'adopter' => mt_rand(1, 100) <= 30 ? 'CV Mitra Usaha Bersama' : null,
+                    'adopter' => mt_rand(1, 100) <= 30 ? $p['ip_adopter'] : null,
                 ]);
             }
 
-            for ($i = 0; $i < 7 + ($y - 2021) * 2; $i++) {
+            for ($i = 0; $i < $p['recognition_base'] + ($y - 2021) * 2; $i++) {
                 Recognition::create([
                     'lecturer_id' => $permanentIds[array_rand($permanentIds)], 'year' => $y,
-                    'title' => ['Narasumber seminar nasional', 'Mitra bestari jurnal internasional', 'Juri kompetisi inovasi', 'Visiting lecturer Universiti Malaya', 'Staf ahli DPRD Provinsi', 'Penghargaan dosen berprestasi'][mt_rand(0, 5)],
+                    'title' => $p['recognitions'][array_rand($p['recognitions'])],
                     'kind' => array_keys(\App\Support\Labels::RECOGNITIONS)[mt_rand(0, 5)],
                     'level' => ['nasional', 'internasional', 'provinsi'][mt_rand(0, 2)],
                 ]);
             }
 
-            for ($i = 0; $i < 14 + ($y - 2021) * 3; $i++) {
+            for ($i = 0; $i < $p['grant_base'] + ($y - 2021) * 3; $i++) {
                 $source = $this->weighted(['internal' => 45, 'nasional' => 30, 'industri' => 15, 'internasional' => 5, 'mandiri' => 5]);
                 ResearchGrant::create([
                     'year' => $y, 'category' => mt_rand(1, 100) <= 70 ? 'penelitian' : 'pkm', 'source' => $source,
                     'title' => ucfirst($prefix[array_rand($prefix)]).' '.$topics[array_rand($topics)],
-                    'amount' => match ($source) { 'internal' => mt_rand(10, 30), 'nasional' => mt_rand(40, 180), 'industri' => mt_rand(30, 120), 'internasional' => mt_rand(150, 400), default => mt_rand(5, 15) } * 1_000_000,
+                    'amount' => match ($source) { 'internal' => mt_rand(10, 30), 'nasional' => mt_rand(40, 180), 'industri' => mt_rand(30, 120), 'internasional' => mt_rand(150, 400), default => mt_rand(5, 15) } * 1_000_000 * $p['grant_scale'],
                 ]);
             }
         }
 
-        foreach ([2021 => 'KAP Rahardjo, Wibisono & Rekan', 2022 => 'KAP Rahardjo, Wibisono & Rekan', 2023 => 'KAP Santoso Halim & Rekan', 2024 => 'KAP Santoso Halim & Rekan', 2025 => 'KAP Santoso Halim & Rekan'] as $y => $kap) {
+        foreach ($p['auditors'] as $y => $kap) {
             FinancialAudit::create(['year' => $y, 'auditor' => $kap, 'opinion' => 'WTP', 'report_date' => ($y + 1).'-04-'.mt_rand(10, 28)]);
         }
 
         // Survei kepuasan 6 kelompok x 3 tahun: tiap responden menjawab 6 butir.
-        $population = ['mahasiswa' => 9800, 'dosen' => 330, 'tendik' => 260, 'mitra' => 85, 'lulusan' => 2100, 'pengguna' => 240];
+        $population = $p['survey_population'];
         $rate = ['mahasiswa' => 0.32, 'dosen' => 0.62, 'tendik' => 0.58, 'mitra' => 0.45, 'lulusan' => 0.28, 'pengguna' => 0.4];
         $labels = ['mahasiswa' => 'Mahasiswa', 'dosen' => 'Dosen', 'tendik' => 'Tenaga Kependidikan', 'mitra' => 'Mitra Kerja Sama', 'lulusan' => 'Lulusan', 'pengguna' => 'Pengguna Lulusan'];
 
@@ -424,11 +475,11 @@ class DemoSeeder extends Seeder
 
         Survey::create([
             'year' => 2026, 'stakeholder' => 'mahasiswa', 'title' => 'Survei Kepuasan Mahasiswa terhadap Tata Pamong 2026',
-            'population' => 10100, 'respondents' => 0, 'is_open' => true,
+            'population' => $p['survey_open_population'], 'respondents' => 0, 'is_open' => true,
         ]);
 
         foreach ([2020, 2021, 2022, 2023, 2024] as $y) {
-            $grad = 1850 + ($y - 2020) * 70;
+            $grad = $p['tracer_graduates'] + ($y - 2020) * $p['tracer_growth'];
             $resp = (int) round($grad * (0.52 + ($y - 2020) * 0.03));
             $employed = (int) round($resp * (0.68 + ($y - 2020) * 0.015));
             TracerStudy::create([
@@ -443,14 +494,14 @@ class DemoSeeder extends Seeder
 
         foreach ([2023, 2024, 2025] as $y) {
             foreach ($aspectBase as $aspect => $base) {
-                $n = 96 + ($y - 2023) * 12;
+                $n = $p['employer_respondents'] + ($y - 2023) * 12;
                 $good = min(0.97, $base + ($y - 2023) * 0.025);
                 $sb = (int) round($n * $good * 0.45);
                 $b = (int) round($n * $good) - $sb;
                 $c = (int) round(($n - $sb - $b) * 0.8);
                 EmployerSatisfaction::create([
                     'year' => $y, 'aspect' => $aspect, 'sb' => $sb, 'b' => $b, 'c' => $c, 'kb' => $n - $sb - $b - $c,
-                    'follow_up' => $aspect === 'bahasa_asing' ? 'Program English Proficiency wajib dan sertifikasi TOEFL ITP mulai 2025.' : null,
+                    'follow_up' => $aspect === 'bahasa_asing' ? $p['employer_follow_up'] : null,
                 ]);
             }
         }
@@ -476,31 +527,57 @@ class DemoSeeder extends Seeder
         };
     }
 
+    /**
+     * Skenario proyek akreditasi contoh.
+     *
+     * @return array<string, mixed>
+     */
+    protected function projectPlan(): array
+    {
+        return [
+            'variant' => '3c',
+            'name' => 'Akreditasi Institusi 2027',
+            'track' => Track::Accredited,
+            'target_date' => '2027-03-31',
+            'notes' => 'Target pengajuan Maret 2027, lima bulan sebelum SK akreditasi institusi berakhir (15 Agustus 2027).',
+            'locked_weeks' => 14,
+            'eligibility_note' => 'Menunggu pembaruan data pelaporan PDDikti semester gasal 2025/2026.',
+            // Sub-indikator yang dinilai tidak memenuhi (2A adalah syarat perlu) dan yang belum dinilai.
+            'not_met' => ['2A', '12B', '15C', '19B', '23B', '27B', '30A', '38B'],
+            // null: penilaian jalur Unggul diacak (sekitar 58% terpenuhi).
+            'not_met_excellent' => null,
+            'unassessed' => ['18C', '37A', '39A'],
+            'internal_disagree' => ['13A'],
+            'internal_note' => 'Bukti pelaksanaan PAK belum mencakup seluruh prodi; dinilai belum memenuhi.',
+            'due_start' => '2026-11-15',
+        ];
+    }
+
     protected function seedProject(): AccreditationProject
     {
-        $variant = InstrumentVariant::where('code', '3c')->firstOrFail();
+        $plan = $this->projectPlan();
+        $variant = InstrumentVariant::where('code', $plan['variant'])->firstOrFail();
         $ts = AcademicPeriod::where('year_start', $this->ts)->first();
-        $manajer = $this->users['manajer'];
 
         $project = AccreditationProject::create([
             'instrument_variant_id' => $variant->id, 'ts_period_id' => $ts->id,
-            'name' => 'Akreditasi Institusi 2027', 'track' => Track::Accredited, 'target_date' => '2027-03-31',
-            'state' => ProjectState::Drafting, 'track_locked_at' => now()->subWeeks(14), 'track_locked_by' => $this->users['rektor']->id,
+            'name' => $plan['name'], 'track' => $plan['track'], 'target_date' => $plan['target_date'],
+            'state' => ProjectState::Drafting, 'track_locked_at' => now()->subWeeks($plan['locked_weeks']), 'track_locked_by' => $this->users['rektor']->id,
             'word_limit' => config('akredia.word_limit', 1500),
-            'notes' => 'Target pengajuan Maret 2027, lima bulan sebelum SK akreditasi institusi berakhir (15 Agustus 2027).',
+            'notes' => $plan['notes'],
         ]);
         $project->forceFill(['created_at' => now()->subWeeks(16)])->saveQuietly();
 
         app(ProjectWorkflow::class)->generate($project);
 
         foreach ($project->eligibilityItems as $i => $item) {
-            $item->update(['is_met' => $i !== 3, 'note' => $i === 3 ? 'Menunggu pembaruan data pelaporan PDDikti semester gasal 2025/2026.' : 'Terverifikasi tim akreditasi.']);
+            $item->update(['is_met' => $i !== 3, 'note' => $i === 3 ? $plan['eligibility_note'] : 'Terverifikasi tim akreditasi.']);
         }
 
-        // Sub-indikator yang dinilai tidak memenuhi (2A adalah syarat perlu) dan yang belum dinilai.
-        $notMet = ['2A', '12B', '15C', '19B', '23B', '27B', '30A', '38B'];
-        $unassessed = ['18C', '37A', '39A'];
-        $internalDisagree = ['13A'];
+        $notMet = $plan['not_met'];
+        $notMetExcellent = $plan['not_met_excellent'];
+        $unassessed = $plan['unassessed'];
+        $internalDisagree = $plan['internal_disagree'];
         $reviewers = [$this->users['reviewer'], $this->users['reviewer2']];
         $asesor = $this->users['asesor'];
 
@@ -516,7 +593,7 @@ class DemoSeeder extends Seeder
             $item->update([
                 'unit_id' => $this->units[$unit]->id, 'pic_id' => $pic->id, 'reviewer_id' => $reviewer->id,
                 'second_pic_id' => $n >= 16 && $n <= 23 ? $this->users['pic.akademik']->id : null,
-                'due_date' => Carbon::parse('2026-11-15')->addDays(($n % 8) * 7),
+                'due_date' => Carbon::parse($plan['due_start'])->addDays(($n % 8) * 7),
                 'current_condition' => 'Kondisi saat ini telah dipetakan dari dokumen SPMI dan data PDDikti TS-2 s.d. TS.',
             ]);
 
@@ -532,7 +609,7 @@ class DemoSeeder extends Seeder
             ]);
             Assessment::create([
                 'work_item_id' => $item->id, 'assessor_id' => $pic->id, 'kind' => 'self', 'track' => 'excellent',
-                'is_met' => $met && mt_rand(1, 100) <= 58, 'assessed_at' => now()->subDays(mt_rand(5, 60)),
+                'is_met' => $met && ($notMetExcellent === null ? mt_rand(1, 100) <= 58 : ! in_array($code, $notMetExcellent, true)), 'assessed_at' => now()->subDays(mt_rand(5, 60)),
             ]);
 
             if ($idx % 3 !== 2) {
@@ -540,7 +617,7 @@ class DemoSeeder extends Seeder
                 Assessment::create([
                     'work_item_id' => $item->id, 'assessor_id' => $asesor->id, 'kind' => 'internal', 'track' => 'accredited',
                     'is_met' => $agree ? $met : ! $met,
-                    'note' => $agree ? 'Sesuai dengan penilaian mandiri.' : 'Bukti pelaksanaan PAK belum mencakup seluruh prodi; dinilai belum memenuhi.',
+                    'note' => $agree ? 'Sesuai dengan penilaian mandiri.' : $plan['internal_note'],
                     'assessed_at' => now()->subDays(mt_rand(2, 30)),
                 ]);
             }
@@ -572,7 +649,7 @@ class DemoSeeder extends Seeder
 
             foreach ($hints as $hint) {
                 $counter++;
-                $title = Str::ucfirst($hint).' Universitas Nusantara Mandiri';
+                $title = Str::ucfirst($hint).' '.$this->pt->name;
                 $type = $this->docType($hint);
                 $roll = mt_rand(1, 100);
                 $status = match (true) {
@@ -593,7 +670,7 @@ class DemoSeeder extends Seeder
 
                 $doc = Document::create([
                     'owner_unit_id' => $this->units[$unit]->id, 'title' => Str::limit($title, 250, ''), 'doc_type' => $type,
-                    'number' => $type === 'sk' ? sprintf('%03d/SK/UNM/%s', mt_rand(1, 400), $docDate->format('Y')) : null,
+                    'number' => $type === 'sk' ? sprintf('%03d/SK/%s/%s', mt_rand(1, 400), $this->short, $docDate->format('Y')) : null,
                     'doc_date' => $docDate, 'approved_by' => in_array($type, ['kebijakan', 'peraturan', 'sk', 'pedoman', 'renstra'], true) ? 'Rektor' : null,
                     'valid_until' => $validUntil, 'confidentiality' => $isPublic ? 'publik' : ($type === 'data' ? 'rahasia' : 'internal'),
                     'is_public' => $isPublic, 'status' => DocumentStatus::Draft, 'uploaded_by' => $uploader->id,
@@ -601,7 +678,7 @@ class DemoSeeder extends Seeder
                 ]);
 
                 if ($counter % 9 === 4) {
-                    $evidence->addVersion($doc, null, 'https://www.unm-demo.ac.id/dokumen/'.Str::slug(Str::limit($hint, 40, '')), $uploader);
+                    $evidence->addVersion($doc, null, rtrim($this->pt->website, '/').'/dokumen/'.Str::slug(Str::limit($hint, 40, '')), $uploader);
                 } else {
                     $path = "bukti/{$this->pt->id}/{$doc->id}/v1-".Str::slug(Str::limit($hint, 40, '')).'.pdf';
                     Storage::disk(EvidenceService::DISK)->put($path, $this->pdf($title, $doc->code, $indicator));
@@ -629,9 +706,9 @@ class DemoSeeder extends Seeder
 
         foreach ($items as $idx => $item) {
             $docs = $docsByIndicator[$item->subIndicator->indicator->number] ?? [];
-            $self = $item->assessments->firstWhere(fn ($a) => $a->kind === 'self' && $a->track === Track::Accredited);
+            $self = $item->assessments->firstWhere(fn ($a) => $a->kind === 'self' && $a->track === $item->project->track);
             $met = $self?->is_met;
-            $keywords = $item->subIndicator->descriptorFor(Track::Accredited)?->keywords ?? collect();
+            $keywords = $item->subIndicator->descriptorFor($item->project->track)?->keywords ?? collect();
             $linked = [];
 
             foreach ($keywords->values() as $k => $kw) {
@@ -733,11 +810,7 @@ class DemoSeeder extends Seeder
                 'accreditation_project_id' => $project->id, 'metric_code' => $code, 'scope_label' => $label,
                 'internal_value' => $internal, 'pddikti_value' => round($internal / $factor, 2), 'tolerance_pct' => 2,
                 'owner_unit_id' => $this->units[$unit]->id, 'owner_id' => $this->users['pic.'.$unit]->id,
-                'note' => match ($code) {
-                    'MHS_AKTIF' => 'Selisih karena 612 mahasiswa cuti belum dilaporkan statusnya ke PDDikti.',
-                    'LULUSAN_TS' => 'Sebagian lulusan wisuda Agustus belum dilaporkan.',
-                    default => null,
-                },
+                'note' => $this->reconciliationNotes()[$code] ?? null,
             ]);
             $r->update(['state' => match ($code) {
                 'MHS_AKTIF' => 'investigation',
@@ -748,50 +821,127 @@ class DemoSeeder extends Seeder
         }
     }
 
+    /** @return array<string, string> */
+    protected function reconciliationNotes(): array
+    {
+        return [
+            'MHS_AKTIF' => 'Selisih karena 612 mahasiswa cuti belum dilaporkan statusnya ke PDDikti.',
+            'LULUSAN_TS' => 'Sebagian lulusan wisuda Agustus belum dilaporkan.',
+        ];
+    }
+
+    /**
+     * Keputusan, tugas, risiko, standar, AMI, dan RTM contoh.
+     *
+     * @return array<string, mixed>
+     */
+    protected function governanceProfile(): array
+    {
+        return [
+            'decisions' => [
+                ['Penetapan Tim Akreditasi Institusi 2027', '-110 days', 'rapat_pimpinan', 'Rektor menetapkan Tim Akreditasi Institusi yang diketuai Kepala LPM dengan anggota seluruh kepala biro dan lembaga.'],
+                ['Penetapan jalur akreditasi: Terakreditasi', '-98 days', 'senat', 'Berdasarkan simulasi skor dan syarat perlu, institusi memilih jalur Terakreditasi dan menargetkan jalur Unggul pada siklus berikutnya.'],
+                ['Percepatan kenaikan jabatan akademik dosen', '-80 days', 'rapat_pimpinan', 'Biro SDM menyiapkan klinik jabatan akademik; target 25 dosen naik jabatan sampai Juni 2027.'],
+                ['Alokasi anggaran penyusunan LED dan LKPT', '-75 days', 'yayasan', 'Badan Penyelenggara menyetujui tambahan anggaran Rp 450 juta untuk kegiatan akreditasi.'],
+                ['Pembentukan klinik penulisan LED', '-55 days', 'taskforce', 'Klinik penulisan diadakan setiap Kamis dengan pendampingan reviewer.'],
+                ['Perbaikan pelaporan PDDikti semester gasal', '-30 days', 'rapat_pimpinan', 'UPT TIK dan Biro Akademik memutakhirkan status mahasiswa cuti dan lulusan sebelum 30 November.'],
+                ['Tindak lanjut hasil AMI 2026', '-20 days', 'rtm', 'RTM menetapkan 9 tindakan koreksi dan 3 tindakan pencegahan.'],
+                ['Jadwal simulasi asesmen lapangan', '-8 days', 'taskforce', 'Simulasi asesmen lapangan kedua dilaksanakan Januari 2027 dengan asesor eksternal.'],
+            ],
+            'decision_owners' => ['pic.sdm', 'pic.keuangan', 'pic.lpm', 'pic.tik', 'pic.lpm', 'pic.lpm'],
+            'tasks' => [
+                ['Lengkapi notulen RTM 2024 dan 2025', 'lpm'], ['Unggah SK tim penjaminan mutu fakultas', 'lpm'], ['Perbarui manual SPMI sesuai Permendikbudristek 53/2023', 'lpm'],
+                ['Rekap data prestasi mahasiswa TS', 'kemahasiswaan'], ['Analisis tren mahasiswa baru 5 tahun', 'akademik'], ['Susun laporan evaluasi kurikulum OBE', 'akademik'],
+                ['Validasi data dosen di PDDikti', 'sdm'], ['Perbarui katalog layanan TIK', 'tik'], ['Unggah laporan tracer study 2024', 'akademik'],
+                ['Susun peta jalan penelitian 2025-2029', 'lppm'], ['Kumpulkan bukti adopsi HKI oleh mitra', 'lppm'], ['Lengkapi laporan PkM berbasis desa digital', 'lppm'],
+                ['Perbarui SOP penanganan kekerasan', 'satgas'], ['Rekap penerima beasiswa KIP dan internal', 'kemahasiswaan'], ['Susun RKAT 2027', 'keuangan'],
+                ['Laporan kinerja keuangan TS', 'keuangan'], ['Dokumentasikan benchmarking dengan universitas mitra', 'perencanaan'], ['Perbarui renstra 2025-2029', 'perencanaan'],
+                ['Rekap kerja sama luar negeri aktif', 'perencanaan'], ['Lengkapi dokumen K3 dan aksesibilitas disabilitas', 'sarpras'], ['Susun laporan evaluasi pembelajaran semester genap', 'akademik'],
+                ['Siapkan dokumen PAK pada RPS', 'akademik'], ['Rekap sertifikasi kompetensi lulusan', 'akademik'], ['Validasi data survei kepuasan tendik', 'lpm'],
+                ['Perbaiki tautan bukti yang rusak', 'tik'], ['Lengkapi laporan monev hibah internal', 'lppm'], ['Susun laporan capaian diferensiasi misi', 'perencanaan'],
+                ['Unggah laporan auditor independen 2025', 'keuangan'], ['Susun laporan layanan mahasiswa', 'kemahasiswaan'], ['Perbarui pedoman PMB inklusif', 'kemahasiswaan'],
+            ],
+            'risks' => [
+                ['Syarat perlu 2A (implementasi PPEPP) belum terpenuhi', 4, 5, 'pic.lpm', 'Percepat RTM fakultas dan dokumentasi pengendalian standar.'],
+                ['Selisih data mahasiswa aktif dengan PDDikti melebihi toleransi', 4, 4, 'pic.akademik', 'Pemutakhiran status cuti dan lulusan sebelum pelaporan semester.'],
+                ['Prodi Teknik Elektro: akreditasi berakhir Februari 2027', 3, 5, 'pic.akademik', 'Pengajuan reakreditasi ke LAM Teknik paling lambat Oktober 2026.'],
+                ['Keterlambatan penulisan LED kriteria 3', 3, 3, 'pic.sekretariat', 'Klinik penulisan LED dan pendampingan reviewer.'],
+                ['Proporsi lektor dan lektor kepala di bawah ambang jalur Unggul', 3, 3, 'pic.sdm', 'Program percepatan jabatan akademik.'],
+                ['Respons survei mahasiswa rendah', 2, 3, 'pic.lpm', 'Integrasi survei pada portal akademik sebelum pengisian KRS.'],
+                ['Bukti kerja sama internasional kedaluwarsa', 2, 4, 'pic.perencanaan', 'Perpanjangan MoU dan dokumentasi implementasi.'],
+                ['Kehilangan data bukti karena server tunggal', 1, 5, 'pic.tik', 'Cadangan harian otomatis ke penyimpanan terpisah.'],
+                ['Pergantian personel kunci tim akreditasi', 2, 2, 'manajer', 'Dokumentasi peran dan pendamping cadangan setiap PIC.'],
+                ['Kemampuan bahasa asing lulusan dinilai rendah oleh pengguna', 3, 2, 'pic.akademik', 'Program English Proficiency wajib.'],
+            ],
+            'standards' => [
+                ['SM-01', 'Standar Kompetensi Lulusan', 'akademik', 'akademik'], ['SM-02', 'Standar Isi Pembelajaran', 'akademik', 'akademik'],
+                ['SM-03', 'Standar Proses Pembelajaran', 'akademik', 'akademik'], ['SM-04', 'Standar Penilaian Pembelajaran', 'akademik', 'akademik'],
+                ['SM-05', 'Standar Dosen dan Tenaga Kependidikan', 'akademik', 'sdm'], ['SM-06', 'Standar Sarana dan Prasarana', 'akademik', 'sarpras'],
+                ['SM-07', 'Standar Pengelolaan Pembelajaran', 'akademik', 'akademik'], ['SM-08', 'Standar Pembiayaan Pembelajaran', 'akademik', 'keuangan'],
+                ['SM-09', 'Standar Hasil Penelitian', 'akademik', 'lppm'], ['SM-10', 'Standar Proses Penelitian', 'akademik', 'lppm'],
+                ['SM-11', 'Standar Hasil PkM', 'akademik', 'lppm'], ['SM-12', 'Standar Proses PkM', 'akademik', 'lppm'],
+                ['SNA-01', 'Standar Tata Pamong', 'nonakademik', 'sekretariat'], ['SNA-02', 'Standar Kemahasiswaan', 'nonakademik', 'kemahasiswaan'],
+                ['SNA-03', 'Standar Keuangan', 'nonakademik', 'keuangan'], ['SNA-04', 'Standar Kerja Sama', 'nonakademik', 'perencanaan'],
+                ['SNA-05', 'Standar Sistem Informasi', 'nonakademik', 'tik'], ['SNA-06', 'Standar Pencegahan Kekerasan', 'nonakademik', 'satgas'],
+                ['SNA-07', 'Standar Suasana Akademik', 'nonakademik', 'akademik'], ['SNA-08', 'Standar Diferensiasi Misi', 'nonakademik', 'perencanaan'],
+            ],
+            'standard_statement' => ' Universitas Nusantara Mandiri melampaui SN Dikti sesuai misi kewirausahaan berbasis teknologi.',
+            'audits' => [
+                ['name' => 'AMI Siklus 2025', 'cycle_year' => 2025, 'audit_date' => '2025-11-17', 'lead_auditor' => 'Prof. Dr. Made Suardana, M.Si.', 'state' => 'selesai', 'summary' => '24 unit diaudit; 3 temuan mayor, 11 minor, 6 observasi.'],
+                ['name' => 'AMI Siklus 2026', 'cycle_year' => 2026, 'audit_date' => now()->subDays(25), 'lead_auditor' => 'Prof. Dr. Made Suardana, M.Si.', 'state' => 'pelaporan', 'summary' => 'Fokus pada kesiapan akreditasi institusi dan implementasi PPEPP di fakultas.'],
+            ],
+            // [AMI (indeks audits) atau null, kategori, uraian, indikator, unit, status, sumber]
+            'findings' => [
+                [0, 'mayor', 'RTM tingkat fakultas tidak dilaksanakan secara konsisten pada tiga fakultas.', 2, 'lpm', 'closed', 'ami'],
+                [0, 'minor', 'Rencana pembelajaran semester belum memuat sisipan pendidikan antikorupsi pada 4 prodi.', 13, 'akademik', 'closed', 'ami'],
+                [0, 'minor', 'Data beban kerja dosen belum diperbarui di sistem informasi kepegawaian.', 6, 'sdm', 'verification', 'ami'],
+                [0, 'mayor', 'Dokumen peta jalan PkM belum ditetapkan dengan SK.', 20, 'lppm', 'closed', 'ami'],
+                [1, 'mayor', 'Bukti pengendalian dan peningkatan standar akademik belum terdokumentasi lengkap.', 2, 'lpm', 'capa', 'ami'],
+                [1, 'minor', 'Survei kepuasan mitra belum mencakup mitra luar negeri.', 34, 'lpm', 'capa', 'ami'],
+                [1, 'minor', 'Pedoman PMB belum memuat ketentuan afirmasi penyandang disabilitas.', 31, 'kemahasiswaan', 'open', 'ami'],
+                [1, 'observasi', 'Beberapa tautan bukti di laman universitas tidak dapat diakses.', 26, 'tik', 'open', 'ami'],
+                [1, 'minor', 'Laporan monev hibah internal belum memuat analisis ketercapaian luaran.', 18, 'lppm', 'capa', 'ami'],
+                [null, 'minor', 'Analisis akar masalah pada LED kriteria 2 masih deskriptif.', 12, 'akademik', 'open', 'simulasi'],
+                [null, 'observasi', 'Narasumber mahasiswa belum memahami mekanisme penyampaian keluhan.', 32, 'kemahasiswaan', 'capa', 'simulasi'],
+                [null, 'peluang', 'Kerja sama industri dapat diarahkan menjadi pusat unggulan kewirausahaan digital.', 39, 'perencanaan', 'open', 'simulasi'],
+                [null, 'minor', 'Kepuasan mahasiswa terhadap kecepatan tanggapan keluhan di bawah 70%.', 34, 'kemahasiswaan', 'verification', 'survei'],
+                [null, 'mayor', 'Bukti pelaksanaan PPEPP pada standar penelitian belum lengkap.', 17, 'lppm', 'capa', 'simulasi'],
+            ],
+            'reviews' => [
+                ['meeting_date' => '2025-12-18', 'title' => 'RTM Universitas Semester Gasal 2025/2026', 'chair' => 'Rektor', 'minutes' => 'Membahas hasil AMI 2025, survei kepuasan, dan capaian IKU.', 'outcomes' => 'Penetapan 7 tindakan koreksi; revisi standar penelitian; percepatan jabatan akademik.'],
+                ['meeting_date' => '2026-06-23', 'title' => 'RTM Universitas Semester Genap 2025/2026', 'chair' => 'Rektor', 'minutes' => 'Membahas kesiapan akreditasi institusi dan hasil simulasi skor.', 'outcomes' => 'Pemilihan jalur Terakreditasi; pembentukan klinik LED; perbaikan data PDDikti.'],
+                ['meeting_date' => now()->subDays(20)->toDateString(), 'title' => 'RTM Khusus Kesiapan Akreditasi Institusi', 'chair' => 'Wakil Rektor Bidang Akademik', 'minutes' => 'Membahas hasil AMI 2026 dan syarat perlu 2A yang belum terpenuhi.', 'outcomes' => 'Rencana pemenuhan 2A dalam 60 hari; target AKI 85 pada Januari 2027.'],
+            ],
+        ];
+    }
+
     protected function seedGovernance(AccreditationProject $project): void
     {
         $u = $this->users;
 
         // Keputusan pimpinan
-        $decisions = [
-            ['Penetapan Tim Akreditasi Institusi 2027', '-110 days', 'rapat_pimpinan', 'Rektor menetapkan Tim Akreditasi Institusi yang diketuai Kepala LPM dengan anggota seluruh kepala biro dan lembaga.'],
-            ['Penetapan jalur akreditasi: Terakreditasi', '-98 days', 'senat', 'Berdasarkan simulasi skor dan syarat perlu, institusi memilih jalur Terakreditasi dan menargetkan jalur Unggul pada siklus berikutnya.'],
-            ['Percepatan kenaikan jabatan akademik dosen', '-80 days', 'rapat_pimpinan', 'Biro SDM menyiapkan klinik jabatan akademik; target 25 dosen naik jabatan sampai Juni 2027.'],
-            ['Alokasi anggaran penyusunan LED dan LKPT', '-75 days', 'yayasan', 'Badan Penyelenggara menyetujui tambahan anggaran Rp 450 juta untuk kegiatan akreditasi.'],
-            ['Pembentukan klinik penulisan LED', '-55 days', 'taskforce', 'Klinik penulisan diadakan setiap Kamis dengan pendampingan reviewer.'],
-            ['Perbaikan pelaporan PDDikti semester gasal', '-30 days', 'rapat_pimpinan', 'UPT TIK dan Biro Akademik memutakhirkan status mahasiswa cuti dan lulusan sebelum 30 November.'],
-            ['Tindak lanjut hasil AMI 2026', '-20 days', 'rtm', 'RTM menetapkan 9 tindakan koreksi dan 3 tindakan pencegahan.'],
-            ['Jadwal simulasi asesmen lapangan', '-8 days', 'taskforce', 'Simulasi asesmen lapangan kedua dilaksanakan Januari 2027 dengan asesor eksternal.'],
-        ];
+        $g = $this->governanceProfile();
+        $decisions = $g['decisions'];
 
-        foreach ($decisions as $i => [$title, $when, $forum, $content]) {
-            $decision = Decision::create(['accreditation_project_id' => $project->id, 'title' => $title, 'decision_date' => now()->modify($when), 'forum' => $forum, 'decided_by' => $forum === 'yayasan' ? 'Ketua Yayasan' : 'Rektor', 'content' => $content]);
+        foreach ($decisions as $i => $row) {
+            [$title, $when, $forum, $content] = $row;
+            $decidedBy = $row[4] ?? match ($forum) { 'yayasan' => 'Ketua Yayasan', 'mwa' => 'Ketua Majelis Wali Amanat', default => 'Rektor' };
+            $decision = Decision::create(['accreditation_project_id' => $project->id, 'title' => $title, 'decision_date' => now()->modify($when), 'forum' => $forum, 'decided_by' => $decidedBy, 'content' => $content]);
 
             if ($i >= 2) {
-                $owner = $this->users[['pic.sdm', 'pic.keuangan', 'pic.lpm', 'pic.tik', 'pic.lpm', 'pic.lpm'][$i - 2]];
+                $owner = $this->users[$g['decision_owners'][$i - 2]];
                 $this->task($project, $title.': tindak lanjut', $owner, 'decision', $decision->id, $i * 9 - 60, $i < 6 ? 'done' : 'progress');
             }
         }
 
         // Tugas dari RTL kertas kerja dan tugas manual
-        $titles = [
-            ['Lengkapi notulen RTM 2024 dan 2025', 'lpm'], ['Unggah SK tim penjaminan mutu fakultas', 'lpm'], ['Perbarui manual SPMI sesuai Permendikbudristek 53/2023', 'lpm'],
-            ['Rekap data prestasi mahasiswa TS', 'kemahasiswaan'], ['Analisis tren mahasiswa baru 5 tahun', 'akademik'], ['Susun laporan evaluasi kurikulum OBE', 'akademik'],
-            ['Validasi data dosen di PDDikti', 'sdm'], ['Perbarui katalog layanan TIK', 'tik'], ['Unggah laporan tracer study 2024', 'akademik'],
-            ['Susun peta jalan penelitian 2025-2029', 'lppm'], ['Kumpulkan bukti adopsi HKI oleh mitra', 'lppm'], ['Lengkapi laporan PkM berbasis desa digital', 'lppm'],
-            ['Perbarui SOP penanganan kekerasan', 'satgas'], ['Rekap penerima beasiswa KIP dan internal', 'kemahasiswaan'], ['Susun RKAT 2027', 'keuangan'],
-            ['Laporan kinerja keuangan TS', 'keuangan'], ['Dokumentasikan benchmarking dengan universitas mitra', 'perencanaan'], ['Perbarui renstra 2025-2029', 'perencanaan'],
-            ['Rekap kerja sama luar negeri aktif', 'perencanaan'], ['Lengkapi dokumen K3 dan aksesibilitas disabilitas', 'sarpras'], ['Susun laporan evaluasi pembelajaran semester genap', 'akademik'],
-            ['Siapkan dokumen PAK pada RPS', 'akademik'], ['Rekap sertifikasi kompetensi lulusan', 'akademik'], ['Validasi data survei kepuasan tendik', 'lpm'],
-            ['Perbaiki tautan bukti yang rusak', 'tik'], ['Lengkapi laporan monev hibah internal', 'lppm'], ['Susun laporan capaian diferensiasi misi', 'perencanaan'],
-            ['Unggah laporan auditor independen 2025', 'keuangan'], ['Susun laporan layanan mahasiswa', 'kemahasiswaan'], ['Perbarui pedoman PMB inklusif', 'kemahasiswaan'],
-        ];
+        $titles = $g['tasks'];
         $items = WorkItem::where('accreditation_project_id', $project->id)->get();
 
         foreach ($titles as $i => [$title, $unitKey]) {
             $unitItems = $items->where('unit_id', $this->units[$unitKey]->id)->values();
             $item = $unitItems->isNotEmpty() ? $unitItems[$i % $unitItems->count()] : null;
-            $offset = [-45, -38, -30, -25, -21, -18, -14, -10, -7, -5, -3, -2, 2, 4, 6, 8, 10, 12, 14, 18, 21, 25, 28, 32, 35, 40, 45, 50, 55, 60][$i];
+            $offset = [-45, -38, -30, -25, -21, -18, -14, -10, -7, -5, -3, -2, 2, 4, 6, 8, 10, 12, 14, 18, 21, 25, 28, 32, 35, 40, 45, 50, 55, 60][$i % 30];
             $status = match (true) {
                 $offset < 0 && $i % 5 === 3 => 'progress',
                 $offset < 0 && $i % 7 === 6 => 'todo',
@@ -803,18 +953,7 @@ class DemoSeeder extends Seeder
         }
 
         // Risiko
-        $risks = [
-            ['Syarat perlu 2A (implementasi PPEPP) belum terpenuhi', 4, 5, 'pic.lpm', 'Percepat RTM fakultas dan dokumentasi pengendalian standar.'],
-            ['Selisih data mahasiswa aktif dengan PDDikti melebihi toleransi', 4, 4, 'pic.akademik', 'Pemutakhiran status cuti dan lulusan sebelum pelaporan semester.'],
-            ['Prodi Teknik Elektro: akreditasi berakhir Februari 2027', 3, 5, 'pic.akademik', 'Pengajuan reakreditasi ke LAM Teknik paling lambat Oktober 2026.'],
-            ['Keterlambatan penulisan LED kriteria 3', 3, 3, 'pic.sekretariat', 'Klinik penulisan LED dan pendampingan reviewer.'],
-            ['Proporsi lektor dan lektor kepala di bawah ambang jalur Unggul', 3, 3, 'pic.sdm', 'Program percepatan jabatan akademik.'],
-            ['Respons survei mahasiswa rendah', 2, 3, 'pic.lpm', 'Integrasi survei pada portal akademik sebelum pengisian KRS.'],
-            ['Bukti kerja sama internasional kedaluwarsa', 2, 4, 'pic.perencanaan', 'Perpanjangan MoU dan dokumentasi implementasi.'],
-            ['Kehilangan data bukti karena server tunggal', 1, 5, 'pic.tik', 'Cadangan harian otomatis ke penyimpanan terpisah.'],
-            ['Pergantian personel kunci tim akreditasi', 2, 2, 'manajer', 'Dokumentasi peran dan pendamping cadangan setiap PIC.'],
-            ['Kemampuan bahasa asing lulusan dinilai rendah oleh pengguna', 3, 2, 'pic.akademik', 'Program English Proficiency wajib.'],
-        ];
+        $risks = $g['risks'];
 
         foreach ($risks as $i => [$title, $p, $impact, $owner, $mitigation]) {
             Risk::create([
@@ -825,54 +964,27 @@ class DemoSeeder extends Seeder
         }
 
         // Standar mutu SPMI
-        $standards = [
-            ['SM-01', 'Standar Kompetensi Lulusan', 'akademik', 'akademik'], ['SM-02', 'Standar Isi Pembelajaran', 'akademik', 'akademik'],
-            ['SM-03', 'Standar Proses Pembelajaran', 'akademik', 'akademik'], ['SM-04', 'Standar Penilaian Pembelajaran', 'akademik', 'akademik'],
-            ['SM-05', 'Standar Dosen dan Tenaga Kependidikan', 'akademik', 'sdm'], ['SM-06', 'Standar Sarana dan Prasarana', 'akademik', 'sarpras'],
-            ['SM-07', 'Standar Pengelolaan Pembelajaran', 'akademik', 'akademik'], ['SM-08', 'Standar Pembiayaan Pembelajaran', 'akademik', 'keuangan'],
-            ['SM-09', 'Standar Hasil Penelitian', 'akademik', 'lppm'], ['SM-10', 'Standar Proses Penelitian', 'akademik', 'lppm'],
-            ['SM-11', 'Standar Hasil PkM', 'akademik', 'lppm'], ['SM-12', 'Standar Proses PkM', 'akademik', 'lppm'],
-            ['SNA-01', 'Standar Tata Pamong', 'nonakademik', 'sekretariat'], ['SNA-02', 'Standar Kemahasiswaan', 'nonakademik', 'kemahasiswaan'],
-            ['SNA-03', 'Standar Keuangan', 'nonakademik', 'keuangan'], ['SNA-04', 'Standar Kerja Sama', 'nonakademik', 'perencanaan'],
-            ['SNA-05', 'Standar Sistem Informasi', 'nonakademik', 'tik'], ['SNA-06', 'Standar Pencegahan Kekerasan', 'nonakademik', 'satgas'],
-            ['SNA-07', 'Standar Suasana Akademik', 'nonakademik', 'akademik'], ['SNA-08', 'Standar Diferensiasi Misi', 'nonakademik', 'perencanaan'],
-        ];
+        $standards = $g['standards'];
         $stages = array_keys(QualityStandard::STAGES);
         $standardModels = [];
 
         foreach ($standards as $i => [$code, $name, $category, $unit]) {
             $standardModels[] = QualityStandard::create([
                 'owner_unit_id' => $this->units[$unit]->id, 'code' => $code, 'name' => $name, 'category' => $category,
-                'statement' => $name.' Universitas Nusantara Mandiri melampaui SN Dikti sesuai misi kewirausahaan berbasis teknologi.',
+                'statement' => $name.$g['standard_statement'],
                 'ppepp_stage' => $stages[($i * 3) % 5], 'approved_at' => '2024-02-12', 'review_due' => now()->addMonths(($i % 6) * 2 - 1),
             ]);
         }
 
         // AMI dan temuan
-        $ami2025 = InternalAudit::create(['unit_id' => $this->units['lpm']->id, 'name' => 'AMI Siklus 2025', 'cycle_year' => 2025, 'audit_date' => '2025-11-17', 'lead_auditor' => 'Prof. Dr. Made Suardana, M.Si.', 'state' => 'selesai', 'summary' => '24 unit diaudit; 3 temuan mayor, 11 minor, 6 observasi.']);
-        $ami2026 = InternalAudit::create(['unit_id' => $this->units['lpm']->id, 'name' => 'AMI Siklus 2026', 'cycle_year' => 2026, 'audit_date' => now()->subDays(25), 'lead_auditor' => 'Prof. Dr. Made Suardana, M.Si.', 'state' => 'pelaporan', 'summary' => 'Fokus pada kesiapan akreditasi institusi dan implementasi PPEPP di fakultas.']);
+        $audits = array_map(fn ($a) => InternalAudit::create(['unit_id' => $this->units['lpm']->id] + $a), $g['audits']);
 
         $indicatorIds = Indicator::pluck('id', 'number');
-        $findings = [
-            [$ami2025, 'mayor', 'RTM tingkat fakultas tidak dilaksanakan secara konsisten pada tiga fakultas.', 2, 'lpm', 'closed', 'ami'],
-            [$ami2025, 'minor', 'Rencana pembelajaran semester belum memuat sisipan pendidikan antikorupsi pada 4 prodi.', 13, 'akademik', 'closed', 'ami'],
-            [$ami2025, 'minor', 'Data beban kerja dosen belum diperbarui di sistem informasi kepegawaian.', 6, 'sdm', 'verification', 'ami'],
-            [$ami2025, 'mayor', 'Dokumen peta jalan PkM belum ditetapkan dengan SK.', 20, 'lppm', 'closed', 'ami'],
-            [$ami2026, 'mayor', 'Bukti pengendalian dan peningkatan standar akademik belum terdokumentasi lengkap.', 2, 'lpm', 'capa', 'ami'],
-            [$ami2026, 'minor', 'Survei kepuasan mitra belum mencakup mitra luar negeri.', 34, 'lpm', 'capa', 'ami'],
-            [$ami2026, 'minor', 'Pedoman PMB belum memuat ketentuan afirmasi penyandang disabilitas.', 31, 'kemahasiswaan', 'open', 'ami'],
-            [$ami2026, 'observasi', 'Beberapa tautan bukti di laman universitas tidak dapat diakses.', 26, 'tik', 'open', 'ami'],
-            [$ami2026, 'minor', 'Laporan monev hibah internal belum memuat analisis ketercapaian luaran.', 18, 'lppm', 'capa', 'ami'],
-            [null, 'minor', 'Analisis akar masalah pada LED kriteria 2 masih deskriptif.', 12, 'akademik', 'open', 'simulasi'],
-            [null, 'observasi', 'Narasumber mahasiswa belum memahami mekanisme penyampaian keluhan.', 32, 'kemahasiswaan', 'capa', 'simulasi'],
-            [null, 'peluang', 'Kerja sama industri dapat diarahkan menjadi pusat unggulan kewirausahaan digital.', 39, 'perencanaan', 'open', 'simulasi'],
-            [null, 'minor', 'Kepuasan mahasiswa terhadap kecepatan tanggapan keluhan di bawah 70%.', 34, 'kemahasiswaan', 'verification', 'survei'],
-            [null, 'mayor', 'Bukti pelaksanaan PPEPP pada standar penelitian belum lengkap.', 17, 'lppm', 'capa', 'simulasi'],
-        ];
+        $findings = $g['findings'];
 
         foreach ($findings as $i => [$audit, $category, $description, $indicatorNo, $unit, $state, $source]) {
             $finding = Finding::create([
-                'internal_audit_id' => $audit?->id, 'quality_standard_id' => $standardModels[$i % count($standardModels)]->id,
+                'internal_audit_id' => $audit === null ? null : $audits[$audit]->id, 'quality_standard_id' => $standardModels[$i % count($standardModels)]->id,
                 'unit_id' => $this->units[$unit]->id, 'indicator_id' => $indicatorIds[$indicatorNo] ?? null,
                 'category' => $category, 'description' => $description, 'state' => $state, 'source' => $source,
                 'root_cause' => $state === 'open' ? null : 'Belum ada mekanisme pemantauan berkala dan penanggung jawab yang jelas.',
@@ -902,88 +1014,107 @@ class DemoSeeder extends Seeder
             }
         }
 
-        ManagementReview::create(['meeting_date' => '2025-12-18', 'title' => 'RTM Universitas Semester Gasal 2025/2026', 'chair' => 'Rektor', 'minutes' => 'Membahas hasil AMI 2025, survei kepuasan, dan capaian IKU.', 'outcomes' => 'Penetapan 7 tindakan koreksi; revisi standar penelitian; percepatan jabatan akademik.']);
-        ManagementReview::create(['meeting_date' => '2026-06-23', 'title' => 'RTM Universitas Semester Genap 2025/2026', 'chair' => 'Rektor', 'minutes' => 'Membahas kesiapan akreditasi institusi dan hasil simulasi skor.', 'outcomes' => 'Pemilihan jalur Terakreditasi; pembentukan klinik LED; perbaikan data PDDikti.']);
-        ManagementReview::create(['meeting_date' => now()->subDays(20)->toDateString(), 'title' => 'RTM Khusus Kesiapan Akreditasi Institusi', 'chair' => 'Wakil Rektor Bidang Akademik', 'minutes' => 'Membahas hasil AMI 2026 dan syarat perlu 2A yang belum terpenuhi.', 'outcomes' => 'Rencana pemenuhan 2A dalam 60 hari; target AKI 85 pada Januari 2027.']);
+        foreach ($g['reviews'] as $review) {
+            ManagementReview::create($review);
+        }
+    }
+
+    /**
+     * Simulasi dan jadwal asesmen lapangan contoh.
+     *
+     * @return array<string, mixed>
+     */
+    protected function siteVisitProfile(): array
+    {
+        return [
+            'mock' => [
+                'title' => 'Simulasi Asesmen Lapangan I', 'starts_on' => now()->subDays(45), 'ends_on' => now()->subDays(44),
+                'mode' => 'luring', 'assessors' => 'Prof. Dr. Made Suardana, M.Si.; Dr. Ir. Kusnadi, M.Eng. (asesor eksternal)', 'state' => 'selesai',
+                'document_room' => 'Ruang Sidang Senat, Gedung Rektorat Lt. 3', 'minutes' => 'Simulasi berjalan baik; 6 rekomendasi perbaikan.',
+            ],
+            'recommendations' => [
+                [2, 'Lengkapi bukti RTM tingkat fakultas untuk tiga tahun terakhir.', 'task'],
+                [12, 'Tajamkan analisis akar masalah kelulusan tepat waktu per prodi.', 'task'],
+                [15, 'Sajikan analisis tren mahasiswa baru dengan pembanding PT sejenis.', null],
+                [28, 'Tunjukkan bukti sosialisasi Satgas PPK kepada mahasiswa baru.', 'capa'],
+                [34, 'Perluas responden survei mitra hingga mitra luar negeri.', null],
+                [39, 'Kumpulkan testimoni pihak eksternal atas keunggulan kewirausahaan digital.', null],
+            ],
+            'visit' => [
+                'title' => 'Asesmen Lapangan BAN-PT', 'starts_on' => '2027-06-14', 'ends_on' => '2027-06-15',
+                'mode' => 'luring', 'assessors' => 'Menunggu penugasan BAN-PT', 'rehearsal_on' => '2027-06-07', 'state' => 'rencana',
+                'document_room' => 'Ruang Sidang Senat, Gedung Rektorat Lt. 3',
+            ],
+            'visit_date' => '2027-06-14',
+            'sessions' => [
+                ['08:00', '09:00', 'pimpinan', 'Pembukaan dan presentasi Rektor', 'Ruang Senat', 'Rektor'],
+                ['09:00', '10:30', 'pimpinan', 'Wawancara pimpinan dan badan penyelenggara', 'Ruang Senat', 'Kepala LPM'],
+                ['10:30', '11:30', 'dosen', 'Wawancara dosen', 'Ruang Rapat FEB', 'Dekan FEB'],
+                ['11:30', '12:30', 'tendik', 'Wawancara tenaga kependidikan', 'Ruang Rapat BAA', 'Kepala BAA'],
+                ['13:30', '14:30', 'mahasiswa', 'Wawancara mahasiswa', 'Aula Kemahasiswaan', 'Kepala BKM'],
+                ['14:30', '15:30', 'lulusan', 'Wawancara lulusan dan pengguna lulusan', 'Ruang Alumni', 'Kepala BKM'],
+                ['15:30', '17:00', 'observasi', 'Observasi sarana prasarana dan laboratorium', 'Kampus utama', 'Kepala Biro Umum'],
+            ],
+            'interviewees' => [
+                ['pimpinan', 'Prof. Dr. Ir. Hendra Wiratmaja, M.T.', 'Rektor', true], ['pimpinan', 'H. Darmawan Kusuma, S.E., M.M.', 'Ketua Yayasan', true],
+                ['pimpinan', 'Dr. Lestari Handayani, M.Pd.', 'Wakil Rektor I', true], ['dosen', 'Dr. Fajar Nugroho, M.Kom.', 'Dekan FIK', true],
+                ['dosen', 'Sinta Rahayu, M.Pd.', 'Dosen PGSD', false], ['dosen', 'Bayu Setiawan, M.T.', 'Dosen Teknik Sipil', true],
+                ['tendik', 'Nurul Hakim, S.E.', 'Staf Biro Keuangan', true], ['tendik', 'Galih Permana, A.Md.', 'Pranata laboratorium', false],
+                ['mahasiswa', 'Rizki Maulana', 'Ketua BEM', true], ['mahasiswa', 'Putri Anggraini', 'Mahasiswa Informatika 2023', false],
+                ['lulusan', 'Taufik Hidayat, S.Kom.', 'Alumni Informatika 2021', true], ['pengguna', 'Ir. Wawan Suryadi', 'HR Manager PT Mitra Teknologi', false],
+            ],
+            'questions' => [
+                [1, 'pimpinan', 'Bagaimana kebijakan SPMI berbasis risiko ditetapkan dan disosialisasikan?', 'Kebijakan SPMI 2024, SK organisasi mutu, register risiko mutu.'],
+                [2, 'pimpinan', 'Tunjukkan contoh satu siklus PPEPP yang menghasilkan peningkatan standar.', 'Standar penelitian 2023 → AMI → RTM → revisi target publikasi 2025.'],
+                [6, 'pimpinan', 'Bagaimana rencana pemenuhan dosen pada prodi dengan rasio tinggi?', 'Renstra SDM, rekrutmen 2026, rasio per prodi.'],
+                [10, 'dosen', 'Bagaimana hasil evaluasi pembelajaran digunakan untuk perbaikan?', 'Laporan EDOM, rapat prodi, perubahan RPS.'],
+                [11, 'dosen', 'Apa dukungan institusi untuk kenaikan jabatan akademik?', 'Klinik jabatan akademik, insentif publikasi.'],
+                [13, 'dosen', 'Bagaimana pendidikan antikorupsi disisipkan dalam pembelajaran?', 'RPS dengan sisipan PAK, modul PAK.'],
+                [17, 'dosen', 'Bagaimana integritas penelitian dijaga?', 'Komisi etik, cek similaritas, pedoman penelitian.'],
+                [26, 'tendik', 'Bagaimana integrasi data akademik dengan PDDikti?', 'Arsitektur SI, jadwal sinkronisasi, log pelaporan.'],
+                [27, 'tendik', 'Bagaimana pendanaan bagi mahasiswa kurang beruntung dikelola?', 'Kebijakan beasiswa, data penerima KIP dan internal.'],
+                [28, 'mahasiswa', 'Apakah Anda mengetahui cara melapor bila mengalami kekerasan?', 'Kanal Satgas, sosialisasi PKKMB, poster kampus.'],
+                [30, 'mahasiswa', 'Kegiatan apa yang membangun suasana akademik?', 'Kuliah tamu, seminar, kompetisi.'],
+                [32, 'mahasiswa', 'Layanan mahasiswa apa yang paling membantu?', 'Konseling, karier, kesehatan, beasiswa.'],
+                [14, 'lulusan', 'Bagaimana kampus menyiapkan Anda memasuki dunia kerja?', 'Sertifikasi, magang, pusat karier.'],
+                [14, 'pengguna', 'Bagaimana kinerja lulusan UNM di tempat kerja Anda?', 'Survei pengguna lulusan; masukan bahasa asing.'],
+                [34, 'pimpinan', 'Bagaimana hasil survei kepuasan ditindaklanjuti?', 'Laporan survei, RTM, perbaikan layanan.'],
+                [35, 'pimpinan', 'Bagaimana opini audit laporan keuangan tiga tahun terakhir?', 'WTP 2023-2025 dari KAP.'],
+                [36, 'pimpinan', 'Apa diferensiasi misi UNM dan bagaimana diukur?', 'Misi kewirausahaan berbasis teknologi; IKU misi.'],
+                [8, 'observasi', 'Tunjukkan fasilitas ramah disabilitas dan K3.', 'Ramp, toilet difabel, jalur evakuasi.'],
+                [9, 'observasi', 'Tunjukkan layanan TIK dan sumber belajar daring.', 'LMS, e-journal, repositori.'],
+                [39, 'pimpinan', 'Apa bukti pengakuan eksternal atas keunggulan UNM?', 'Penghargaan, pusat inkubator bisnis, testimoni mitra.'],
+            ],
+        ];
     }
 
     protected function seedSiteVisits(AccreditationProject $project): void
     {
-        $mock = SiteVisit::create([
-            'accreditation_project_id' => $project->id, 'title' => 'Simulasi Asesmen Lapangan I', 'starts_on' => now()->subDays(45), 'ends_on' => now()->subDays(44),
-            'mode' => 'luring', 'assessors' => 'Prof. Dr. Made Suardana, M.Si.; Dr. Ir. Kusnadi, M.Eng. (asesor eksternal)', 'state' => 'selesai',
-            'document_room' => 'Ruang Sidang Senat, Gedung Rektorat Lt. 3', 'minutes' => 'Simulasi berjalan baik; 6 rekomendasi perbaikan.',
-        ]);
+        $v = $this->siteVisitProfile();
+        $mock = SiteVisit::create(['accreditation_project_id' => $project->id] + $v['mock']);
 
-        $recommendations = [
-            [2, 'Lengkapi bukti RTM tingkat fakultas untuk tiga tahun terakhir.', 'task'],
-            [12, 'Tajamkan analisis akar masalah kelulusan tepat waktu per prodi.', 'task'],
-            [15, 'Sajikan analisis tren mahasiswa baru dengan pembanding PT sejenis.', null],
-            [28, 'Tunjukkan bukti sosialisasi Satgas PPK kepada mahasiswa baru.', 'capa'],
-            [34, 'Perluas responden survei mitra hingga mitra luar negeri.', null],
-            [39, 'Kumpulkan testimoni pihak eksternal atas keunggulan kewirausahaan digital.', null],
-        ];
+        $recommendations = $v['recommendations'];
         $indicatorIds = Indicator::pluck('id', 'number');
 
         foreach ($recommendations as [$no, $text, $follow]) {
             VisitRecommendation::create(['site_visit_id' => $mock->id, 'indicator_id' => $indicatorIds[$no] ?? null, 'recommendation' => $text, 'follow_up' => $follow]);
         }
 
-        $visit = SiteVisit::create([
-            'accreditation_project_id' => $project->id, 'title' => 'Asesmen Lapangan BAN-PT', 'starts_on' => '2027-06-14', 'ends_on' => '2027-06-15',
-            'mode' => 'luring', 'assessors' => 'Menunggu penugasan BAN-PT', 'rehearsal_on' => '2027-06-07', 'state' => 'rencana',
-            'document_room' => 'Ruang Sidang Senat, Gedung Rektorat Lt. 3',
-        ]);
+        $visit = SiteVisit::create(['accreditation_project_id' => $project->id] + $v['visit']);
 
-        $sessions = [
-            ['08:00', '09:00', 'pimpinan', 'Pembukaan dan presentasi Rektor', 'Ruang Senat', 'Rektor'],
-            ['09:00', '10:30', 'pimpinan', 'Wawancara pimpinan dan badan penyelenggara', 'Ruang Senat', 'Kepala LPM'],
-            ['10:30', '11:30', 'dosen', 'Wawancara dosen', 'Ruang Rapat FEB', 'Dekan FEB'],
-            ['11:30', '12:30', 'tendik', 'Wawancara tenaga kependidikan', 'Ruang Rapat BAA', 'Kepala BAA'],
-            ['13:30', '14:30', 'mahasiswa', 'Wawancara mahasiswa', 'Aula Kemahasiswaan', 'Kepala BKM'],
-            ['14:30', '15:30', 'lulusan', 'Wawancara lulusan dan pengguna lulusan', 'Ruang Alumni', 'Kepala BKM'],
-            ['15:30', '17:00', 'observasi', 'Observasi sarana prasarana dan laboratorium', 'Kampus utama', 'Kepala Biro Umum'],
-        ];
+        $sessions = $v['sessions'];
 
         foreach ($sessions as [$start, $end, $group, $topic, $room, $coord]) {
-            VisitSession::create(['site_visit_id' => $visit->id, 'starts_at' => "2027-06-14 {$start}", 'ends_at' => "2027-06-14 {$end}", 'group' => $group, 'topic' => $topic, 'room' => $room, 'coordinator' => $coord]);
+            VisitSession::create(['site_visit_id' => $visit->id, 'starts_at' => "{$v['visit_date']} {$start}", 'ends_at' => "{$v['visit_date']} {$end}", 'group' => $group, 'topic' => $topic, 'room' => $room, 'coordinator' => $coord]);
         }
 
-        $interviewees = [
-            ['pimpinan', 'Prof. Dr. Ir. Hendra Wiratmaja, M.T.', 'Rektor', true], ['pimpinan', 'H. Darmawan Kusuma, S.E., M.M.', 'Ketua Yayasan', true],
-            ['pimpinan', 'Dr. Lestari Handayani, M.Pd.', 'Wakil Rektor I', true], ['dosen', 'Dr. Fajar Nugroho, M.Kom.', 'Dekan FIK', true],
-            ['dosen', 'Sinta Rahayu, M.Pd.', 'Dosen PGSD', false], ['dosen', 'Bayu Setiawan, M.T.', 'Dosen Teknik Sipil', true],
-            ['tendik', 'Nurul Hakim, S.E.', 'Staf Biro Keuangan', true], ['tendik', 'Galih Permana, A.Md.', 'Pranata laboratorium', false],
-            ['mahasiswa', 'Rizki Maulana', 'Ketua BEM', true], ['mahasiswa', 'Putri Anggraini', 'Mahasiswa Informatika 2023', false],
-            ['lulusan', 'Taufik Hidayat, S.Kom.', 'Alumni Informatika 2021', true], ['pengguna', 'Ir. Wawan Suryadi', 'HR Manager PT Mitra Teknologi', false],
-        ];
+        $interviewees = $v['interviewees'];
 
         foreach ($interviewees as [$group, $name, $position, $ok]) {
             VisitInterviewee::create(['site_visit_id' => $visit->id, 'group' => $group, 'name' => $name, 'position' => $position, 'phone' => '08'.mt_rand(1100000000, 1399999999), 'is_confirmed' => $ok]);
         }
 
-        $questions = [
-            [1, 'pimpinan', 'Bagaimana kebijakan SPMI berbasis risiko ditetapkan dan disosialisasikan?', 'Kebijakan SPMI 2024, SK organisasi mutu, register risiko mutu.'],
-            [2, 'pimpinan', 'Tunjukkan contoh satu siklus PPEPP yang menghasilkan peningkatan standar.', 'Standar penelitian 2023 → AMI → RTM → revisi target publikasi 2025.'],
-            [6, 'pimpinan', 'Bagaimana rencana pemenuhan dosen pada prodi dengan rasio tinggi?', 'Renstra SDM, rekrutmen 2026, rasio per prodi.'],
-            [10, 'dosen', 'Bagaimana hasil evaluasi pembelajaran digunakan untuk perbaikan?', 'Laporan EDOM, rapat prodi, perubahan RPS.'],
-            [11, 'dosen', 'Apa dukungan institusi untuk kenaikan jabatan akademik?', 'Klinik jabatan akademik, insentif publikasi.'],
-            [13, 'dosen', 'Bagaimana pendidikan antikorupsi disisipkan dalam pembelajaran?', 'RPS dengan sisipan PAK, modul PAK.'],
-            [17, 'dosen', 'Bagaimana integritas penelitian dijaga?', 'Komisi etik, cek similaritas, pedoman penelitian.'],
-            [26, 'tendik', 'Bagaimana integrasi data akademik dengan PDDikti?', 'Arsitektur SI, jadwal sinkronisasi, log pelaporan.'],
-            [27, 'tendik', 'Bagaimana pendanaan bagi mahasiswa kurang beruntung dikelola?', 'Kebijakan beasiswa, data penerima KIP dan internal.'],
-            [28, 'mahasiswa', 'Apakah Anda mengetahui cara melapor bila mengalami kekerasan?', 'Kanal Satgas, sosialisasi PKKMB, poster kampus.'],
-            [30, 'mahasiswa', 'Kegiatan apa yang membangun suasana akademik?', 'Kuliah tamu, seminar, kompetisi.'],
-            [32, 'mahasiswa', 'Layanan mahasiswa apa yang paling membantu?', 'Konseling, karier, kesehatan, beasiswa.'],
-            [14, 'lulusan', 'Bagaimana kampus menyiapkan Anda memasuki dunia kerja?', 'Sertifikasi, magang, pusat karier.'],
-            [14, 'pengguna', 'Bagaimana kinerja lulusan UNM di tempat kerja Anda?', 'Survei pengguna lulusan; masukan bahasa asing.'],
-            [34, 'pimpinan', 'Bagaimana hasil survei kepuasan ditindaklanjuti?', 'Laporan survei, RTM, perbaikan layanan.'],
-            [35, 'pimpinan', 'Bagaimana opini audit laporan keuangan tiga tahun terakhir?', 'WTP 2023-2025 dari KAP.'],
-            [36, 'pimpinan', 'Apa diferensiasi misi UNM dan bagaimana diukur?', 'Misi kewirausahaan berbasis teknologi; IKU misi.'],
-            [8, 'observasi', 'Tunjukkan fasilitas ramah disabilitas dan K3.', 'Ramp, toilet difabel, jalur evakuasi.'],
-            [9, 'observasi', 'Tunjukkan layanan TIK dan sumber belajar daring.', 'LMS, e-journal, repositori.'],
-            [39, 'pimpinan', 'Apa bukti pengakuan eksternal atas keunggulan UNM?', 'Penghargaan, pusat inkubator bisnis, testimoni mitra.'],
-        ];
+        $questions = $v['questions'];
 
         foreach ($questions as $i => [$no, $group, $q, $points]) {
             VisitQuestion::create(['indicator_id' => $indicatorIds[$no] ?? null, 'group' => $group, 'question' => $q, 'answer_points' => $points, 'owner' => $this->units[$this->unitForIndicator($no)]->name, 'is_rehearsed' => $i % 3 !== 2]);
@@ -1019,9 +1150,10 @@ class DemoSeeder extends Seeder
 
     protected function seedAuditTrail(): void
     {
+        $project = AccreditationProject::where('institution_id', $this->pt->id)->value('name');
         $samples = [
-            ['manajer', 'diubah', 'Akreditasi Institusi 2027', ['state' => ['dari' => 'preparation', 'ke' => 'drafting']]],
-            ['rektor', 'diubah', 'Akreditasi Institusi 2027', ['track_locked_at' => ['dari' => null, 'ke' => now()->subWeeks(14)->format('Y-m-d H:i')]]],
+            ['manajer', 'diubah', $project, ['state' => ['dari' => 'preparation', 'ke' => 'drafting']]],
+            ['rektor', 'diubah', $project, ['track_locked_at' => ['dari' => null, 'ke' => now()->subWeeks(14)->format('Y-m-d H:i')]]],
             ['reviewer', 'diubah', 'LED 1A', ['state' => ['dari' => 'review', 'ke' => 'reviewer_approved']]],
             ['pic.lpm', 'dibuat', 'BKT Kebijakan SPMI', null],
             ['manajer', 'diubah', 'Bukti laporan AMI', ['status' => ['dari' => 'submitted', 'ke' => 'valid']]],
@@ -1074,7 +1206,7 @@ class DemoSeeder extends Seeder
         $statement = Str::lcfirst(rtrim($item->subIndicator->statement, '.'));
 
         $paragraphs = [
-            "Penetapan\nUniversitas Nusantara Mandiri menetapkan kebijakan agar {$statement}. ".($kw[0] ?? 'Standar').' dituangkan dalam dokumen resmi yang disahkan Rektor'.$cite(0).'.',
+            "Penetapan\n{$this->pt->name} menetapkan kebijakan agar {$statement}. ".($kw[0] ?? 'Standar').' dituangkan dalam dokumen resmi yang disahkan Rektor'.$cite(0).'.',
             "Pelaksanaan\nSelama TS-2 sampai TS, pelaksanaan dipantau oleh unit penanggung jawab. ".($kw[1] ?? 'Pelaksanaan standar').' dilakukan secara konsisten di seluruh fakultas'.$cite(1).'.'.$metric,
             "Evaluasi\nEvaluasi dilakukan melalui Audit Mutu Internal tahunan, survei kepuasan, dan monitoring capaian indikator kinerja. ".($kw[2] ?? 'Hasil evaluasi').' dianalisis dan dilaporkan pada rapat tinjauan manajemen.',
             "Pengendalian\nTemuan evaluasi ditindaklanjuti dengan tindakan koreksi dan pencegahan (CAPA) yang dipantau LPM hingga terverifikasi efektif.",
@@ -1131,12 +1263,12 @@ class DemoSeeder extends Seeder
     {
         $esc = fn (string $s) => str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], Str::ascii($s));
         $lines = [
-            [18, 760, 'Universitas Nusantara Mandiri'],
+            [18, 760, $this->pt->name],
             [14, 730, Str::limit($title, 80)],
             [10, 705, 'Nomor bukti: '.$code],
             [10, 688, 'Indikator IAPT 4.1 nomor '.$indicator->number],
             [10, 660, Str::limit($indicator->statement, 95)],
-            [9, 600, 'DOKUMEN CONTOH - data fiktif untuk demonstrasi aplikasi Akredia.'],
+            [9, 600, 'DOKUMEN CONTOH - data ilustrasi untuk demonstrasi aplikasi Akredia.'],
         ];
         $stream = "BT\n";
 

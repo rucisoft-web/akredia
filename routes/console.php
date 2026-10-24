@@ -11,6 +11,7 @@ use App\Services\ExecutiveDashboard;
 use App\Services\ReadinessCalculator;
 use App\Support\CurrentInstitution;
 use Database\Seeders\DemoSeeder;
+use Database\Seeders\UnjDemoSeeder;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -41,13 +42,22 @@ Artisan::command('akredia:create-admin {email?} {--name=} {--password=}', functi
     $this->info("Administrator platform siap: {$user->email} (masuk di /platform)");
 })->purpose('Buat atau perbarui akun administrator platform');
 
-Artisan::command('akredia:demo {--force : Muat ulang tanpa konfirmasi}', function () {
-    if (Institution::where('slug', DemoSeeder::SLUG)->exists() && ! $this->option('force') && ! $this->confirm('Data contoh sudah ada dan akan dimuat ulang. Lanjutkan?')) {
+Artisan::command('akredia:demo {institusi=semua : unm, unj, atau semua} {--force : Muat ulang tanpa konfirmasi}', function (string $institusi = 'semua') {
+    $seeders = collect([DemoSeeder::SLUG => DemoSeeder::class, UnjDemoSeeder::SLUG => UnjDemoSeeder::class])
+        ->only($institusi === 'semua' ? [DemoSeeder::SLUG, UnjDemoSeeder::SLUG] : [$institusi]);
+
+    if ($seeders->isEmpty()) {
+        return $this->error('Pilihan institusi: unm, unj, atau semua.');
+    }
+
+    if (Institution::whereIn('slug', $seeders->keys())->exists() && ! $this->option('force') && ! $this->confirm('Data contoh sudah ada dan akan dimuat ulang. Lanjutkan?')) {
         return;
     }
 
-    $this->call('db:seed', ['--class' => DemoSeeder::class, '--force' => true]);
-})->purpose('Muat data contoh Universitas Nusantara Mandiri (fiktif)');
+    foreach ($seeders as $seeder) {
+        $this->call('db:seed', ['--class' => $seeder, '--force' => true]);
+    }
+})->purpose('Muat data contoh: Universitas Nusantara Mandiri (fiktif) dan/atau Universitas Negeri Jakarta (ilustrasi)');
 
 Artisan::command('akredia:remove-demo {--force}', function () {
     $demo = Institution::where('is_demo', true)->get();

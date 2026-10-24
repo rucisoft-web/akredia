@@ -283,6 +283,7 @@ class ExecutiveDashboard
                 ->map(fn ($a) => ['name' => $a->studyProgram?->level.' '.$a->studyProgram?->name, 'rank' => $a->rank->getLabel(), 'until' => $a->valid_until, 'months' => (int) floor(now()->diffInMonths($a->valid_until, false)), 'program_id' => $a->study_program_id])
                 ->values()->all(),
             'total' => $acc->count(),
+            'international' => ProgramAccreditation::query()->where('is_international', true)->whereDate('valid_until', '>=', today())->distinct()->count('study_program_id'),
             'unggul' => $acc->filter(fn ($a) => in_array($a->rank, [AccreditationRank::Unggul, AccreditationRank::A, AccreditationRank::Internasional], true))->count(),
         ];
     }
