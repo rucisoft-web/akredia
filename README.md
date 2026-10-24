@@ -90,7 +90,7 @@ Hapus data contoh kapan saja: `php artisan akredia:remove-demo`.
 | `akredia:check-links` | Periksa tautan bukti dan hyperlink LED (terjadwal mingguan). |
 | `akredia:weekly-report` | Kirim ringkasan mingguan ke pimpinan (terjadwal Senin 06.30). |
 
-Semua jadwal berjalan dari satu cron: `* * * * * cd /home/USER/akredia && php artisan schedule:run`.
+Semua jadwal berjalan dari satu cron per menit (lihat PANDUAN-CPANEL.md langkah 7). Di cPanel, kolom Command diisi `cd /home/USER/akredia && php artisan schedule:run` tanpa bintang jadwal.
 
 ## Pengujian
 

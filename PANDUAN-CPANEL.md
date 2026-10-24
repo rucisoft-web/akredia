@@ -147,11 +147,28 @@ Setelah berhasil, kosongkan `AKREDIA_ADMIN_PASSWORD` di `.env` dan jalankan `php
 
 Akredia memakai satu cron untuk semua tugas terjadwal (snapshot AKI harian pukul 01.00, pengingat tenggat 07.00, pemeriksaan tautan mingguan, ringkasan mingguan untuk pimpinan setiap Senin 06.30, dan antrean email):
 
+**Di cPanel › Cron Jobs:**
+
+1. *Common Settings*: pilih **Once Per Minute (\* \* \* \* \*)**. Kolom Minute, Hour, Day, Month, dan Weekday otomatis terisi `*`.
+2. Kolom **Command** diisi **tanpa** bintang jadwal:
+
+```
+cd /home/userku/akredia && php artisan schedule:run >> /dev/null 2>&1
+```
+
+3. Klik *Add New Cron Job*.
+
+Ganti `userku` dengan nama akun cPanel Anda yang sebenarnya (lihat jalur folder di File Manager, misalnya `/home/unmadmin`). Bila PHP bawaan cron bukan 8.3, ganti `php` dengan jalur lengkap, misalnya `/opt/cpanel/ea-php83/root/usr/bin/php`.
+
+> Jangan menempelkan `* * * * *` ke kolom Command. cPanel sudah menambahkan jadwal sendiri, sehingga bintang menjadi dobel dan muncul galat `bad command / errors in crontab file, can't install`.
+
+**Lewat Terminal (`crontab -e`)** barulah baris ditulis lengkap dengan jadwalnya:
+
 ```
 * * * * * cd /home/userku/akredia && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-Di cPanel: *Cron Jobs* › *Common Settings* = **Once Per Minute** › isi *Command* di atas › *Add New Cron Job*. Jalankan `php artisan akredia:doctor` beberapa menit kemudian; baris *Penjadwal (cron) berjalan* harus OK.
+Jalankan `php artisan akredia:doctor` beberapa menit kemudian; baris *Penjadwal (cron) berjalan* harus OK.
 
 Tanpa cron aplikasi tetap berjalan; dasbor dihitung ulang saat tombol *Perbarui angka* ditekan, tetapi pengingat dan ringkasan mingguan tidak terkirim.
 

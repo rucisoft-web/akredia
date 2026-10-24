@@ -19,8 +19,9 @@ use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Storage;
 
 /*
-| Perintah operasional Akredia. Di cPanel cukup satu cron per menit:
-|   * * * * * cd /home/USER/akredia && php artisan schedule:run >> /dev/null 2>&1
+| Perintah operasional Akredia. Cukup satu cron per menit. Di cPanel pilih "Once Per Minute"
+| lalu isi kolom Command (tanpa bintang jadwal):
+|   cd /home/USER/akredia && php artisan schedule:run >> /dev/null 2>&1
 */
 
 $institutions = fn (?string $slug) => Institution::query()->where('is_active', true)->when($slug, fn ($q) => $q->where('slug', $slug))->get();
