@@ -7,7 +7,7 @@
             <p>Akredia membantu rektor dan pimpinan menyiapkan akreditasi institusi dengan instrumen IAPT 4.1, sehingga keputusan diambil dari data, bukan dari laporan lisan menjelang tenggat.</p>
             @if ($standalone)
                 <div class="akp-cta">
-                    @if ($guestUrl)<a class="akp-btn" href="{{ $guestUrl }}">Coba sebagai tamu (demo UNJ)</a>@endif
+                    @if ($guestUrl)<a class="akp-btn" href="{{ $guestUrl }}">Coba sebagai tamu</a>@endif
                     <a class="akp-btn ghost" href="{{ $loginUrl }}">Masuk dengan akun</a>
                 </div>
                 @if ($guestUrl)<p class="akp-note">Tanpa pendaftaran. Tamu hanya dapat melihat, tidak dapat mengubah data.</p>@endif
@@ -73,9 +73,23 @@
 
     <section class="akp-card">
         <h2>Coba dalam 15 menit</h2>
-        <p>Cukup peramban, tanpa instalasi. Data yang tampil adalah <b>data demo Universitas Negeri Jakarta</b> yang disusun untuk menjelaskan fitur Akredia.</p>
+        <p>Cukup peramban, tanpa instalasi. Ada tiga perguruan tinggi contoh dengan <b>data demo</b> yang disusun untuk menjelaskan fitur Akredia: profilnya diambil dari laman resmi, sedangkan angka kinerja, nama staf, dan aktivitas adalah ilustrasi.</p>
+        @php($tamu = fn (string $slug) => $guestUrl ? \App\Http\Controllers\DemoController::guestUrl($slug) : null)
+        <div class="akp-samples">
+            @foreach ([
+                ['unj', 'Universitas Negeri Jakarta', 'PTN Badan Hukum · jalur Unggul', 'AKI sekitar 75. Satu syarat perlu Unggul (proporsi lektor kepala dan guru besar) belum terpenuhi; SK berakhir Februari 2027.', 'rektor@unj.akredia.test'],
+                ['binus', 'Universitas Bina Nusantara', 'PTS Akademik · jalur Unggul', 'AKI sekitar 81. Semua syarat perlu terpenuhi; tim menuntaskan bukti hilirisasi riset sebelum unggah Januari 2027.', 'rektor@binus.akredia.test'],
+                ['polban', 'Politeknik Negeri Bandung', 'PTN Vokasi · jalur Unggul', 'AKI sekitar 68 dengan tenggat sebulan. Syarat perlu proporsi prodi Unggul belum terpenuhi; dua prodi segera habis masa akreditasinya.', 'direktur@polban.akredia.test'],
+            ] as [$slug, $name, $kind, $story, $email])
+                <div class="akp-sample">
+                    <b>{{ $name }}</b><small>{{ $kind }}</small>
+                    <span>{{ $story }}</span>
+                    <span class="akp-sample-foot">@if ($url = $tamu($slug))<a href="{{ $url }}">Masuk sebagai tamu</a> · @endif<code>{{ $email }}</code></span>
+                </div>
+            @endforeach
+        </div>
         <ol class="akp-list">
-            <li>@if ($guestUrl)Klik <a href="{{ $guestUrl }}"><b>Masuk sebagai tamu</b></a>, atau masuk @else Masuk @endif dengan akun <code>rektor@unj.akredia.test</code> (kata sandi <code>{{ config('akredia.demo.password') }}</code>).</li>
+            <li>@if ($guestUrl)Pilih <b>Masuk sebagai tamu</b> pada salah satu perguruan tinggi di atas, atau masuk @else Masuk @endif dengan akun pimpinannya (kata sandi <code>{{ config('akredia.demo.password') }}</code>).</li>
             <li>Lihat <b>Dasbor Eksekutif</b>: AKI, proyeksi skor, dan syarat perlu yang gagal. Klik kartunya untuk melihat sub-indikator, PIC, dan bukti yang kurang.</li>
             <li>Buka <b>Simulasi Penilaian</b>, centang sub-indikator yang akan dipenuhi, dan lihat proyeksi skor jalur Unggul berubah.</li>
             <li>Buka <b>Penyusunan LED</b> dan baca narasi yang sudah disetujui reviewer dan disahkan pimpinan.</li>
@@ -121,8 +135,8 @@
     @if ($standalone && $guestUrl)
         <section class="akp-hero akp-end">
             <div>
-                <h2>Lihat sendiri dengan data demo UNJ</h2>
-                <p>Masuk sebagai tamu dan jelajahi dasbor, kertas kerja, LED, dan simulasi skor. Tamu hanya dapat melihat.</p>
+                <h2>Lihat sendiri dengan data demo UNJ, BINUS, atau POLBAN</h2>
+                <p>Masuk sebagai tamu dan jelajahi dasbor, kertas kerja, LED, dan simulasi skor. Tamu hanya dapat melihat, dan perguruan tinggi contoh dapat diganti dari pita di atas layar.</p>
                 <div class="akp-cta"><a class="akp-btn" href="{{ $guestUrl }}">Masuk sebagai tamu</a></div>
             </div>
         </section>

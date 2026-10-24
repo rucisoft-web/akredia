@@ -10,7 +10,9 @@ use App\Services\EvidenceService;
 use App\Services\ExecutiveDashboard;
 use App\Services\ReadinessCalculator;
 use App\Support\CurrentInstitution;
+use Database\Seeders\BinusDemoSeeder;
 use Database\Seeders\DemoSeeder;
+use Database\Seeders\PolbanDemoSeeder;
 use Database\Seeders\UnjDemoSeeder;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Artisan;
@@ -42,12 +44,13 @@ Artisan::command('akredia:create-admin {email?} {--name=} {--password=}', functi
     $this->info("Administrator platform siap: {$user->email} (masuk di /platform)");
 })->purpose('Buat atau perbarui akun administrator platform');
 
-Artisan::command('akredia:demo {institusi=semua : unm, unj, atau semua} {--force : Muat ulang tanpa konfirmasi}', function (string $institusi = 'semua') {
-    $seeders = collect([DemoSeeder::SLUG => DemoSeeder::class, UnjDemoSeeder::SLUG => UnjDemoSeeder::class])
-        ->only($institusi === 'semua' ? [DemoSeeder::SLUG, UnjDemoSeeder::SLUG] : [$institusi]);
+Artisan::command('akredia:demo {institusi=semua : unj, binus, polban, unm, atau semua} {--force : Muat ulang tanpa konfirmasi}', function (string $institusi = 'semua') {
+    // "semua" memuat tiga perguruan tinggi contoh yang dapat dibuka lewat "Masuk sebagai Tamu"; UNM (fiktif) dimuat terpisah.
+    $all = [UnjDemoSeeder::SLUG => UnjDemoSeeder::class, BinusDemoSeeder::SLUG => BinusDemoSeeder::class, PolbanDemoSeeder::SLUG => PolbanDemoSeeder::class];
+    $seeders = collect($all + [DemoSeeder::SLUG => DemoSeeder::class])->only($institusi === 'semua' ? array_keys($all) : [$institusi]);
 
     if ($seeders->isEmpty()) {
-        return $this->error('Pilihan institusi: unm, unj, atau semua.');
+        return $this->error('Pilihan institusi: unj, binus, polban, unm, atau semua.');
     }
 
     if (Institution::whereIn('slug', $seeders->keys())->exists() && ! $this->option('force') && ! $this->confirm('Data contoh sudah ada dan akan dimuat ulang. Lanjutkan?')) {
@@ -57,10 +60,13 @@ Artisan::command('akredia:demo {institusi=semua : unm, unj, atau semua} {--force
     foreach ($seeders as $seeder) {
         $this->call('db:seed', ['--class' => $seeder, '--force' => true]);
     }
-})->purpose('Muat data contoh: Universitas Nusantara Mandiri (fiktif) dan/atau Universitas Negeri Jakarta (ilustrasi)');
 
-Artisan::command('akredia:remove-demo {--force}', function () {
-    $demo = Institution::where('is_demo', true)->get();
+    // Akun tamu lama (satu institusi) digantikan akun tamu bersama.
+    User::where('email', 'tamu@unj.akredia.test')->delete();
+})->purpose('Muat data contoh: UNJ, BINUS, dan POLBAN (profil dari laman resmi, angka ilustrasi) atau UNM (fiktif)');
+
+Artisan::command('akredia:remove-demo {institusi? : slug institusi contoh; kosongkan untuk semua} {--force}', function (?string $institusi = null) {
+    $demo = Institution::where('is_demo', true)->when($institusi, fn ($query) => $query->where('slug', $institusi))->get();
 
     if ($demo->isEmpty()) {
         return $this->info('Tidak ada data contoh.');
@@ -75,11 +81,11 @@ Artisan::command('akredia:remove-demo {--force}', function () {
         $userIds = Membership::withoutGlobalScopes()->where('institution_id', $institution->id)->pluck('user_id');
         $institution->delete();
         // Akun demo yang tidak lagi menjadi anggota institusi mana pun ikut dihapus.
-        User::whereIn('id', $userIds)->where('email', 'like', '%@akredia.test')->where('is_platform_admin', false)
+        User::whereIn('id', $userIds)->where('email', 'like', '%akredia.test')->where('is_platform_admin', false)
             ->whereDoesntHave('memberships')->delete();
     }
 
-    $this->info('Data contoh dihapus.');
+    $this->info('Data contoh dihapus: '.$demo->pluck('name')->implode(', ').'.');
 })->purpose('Hapus institusi contoh, akun demo, dan berkas buktinya');
 
 Artisan::command('akredia:doctor', function () {

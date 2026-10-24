@@ -2,17 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Enums\DocumentStatus;
 use App\Enums\Track;
 use App\Models\AcademicPeriod;
-use App\Models\AccreditationProject;
-use App\Models\Document;
-use App\Models\EvidenceLink;
 use App\Models\ProgramAccreditation;
 use App\Models\StudyProgram;
 use App\Models\Unit;
-use App\Models\WorkItem;
-use App\Services\EvidenceService;
 use Illuminate\Support\Carbon;
 
 /**
@@ -31,6 +25,8 @@ class UnjDemoSeeder extends DemoSeeder
     protected string $emailDomain = 'unj.akredia.test';
 
     protected string $short = 'UNJ';
+
+    protected bool $guestAccess = true;
 
     protected function institutionAttributes(): array
     {
@@ -270,8 +266,6 @@ class UnjDemoSeeder extends DemoSeeder
             ['pic.satgas', 'pic.satgas', 'Dr. Lina Marlina, M.Psi., Psikolog', 'pic', 'satgas', 'Ketua Satgas PPK'],
             ['data.feb', 'data.feb', 'Yoga Pratama, S.E., M.Ak.', 'pemilik_data', 'feb', 'Operator Data FEB'],
             ['pengamat', 'pengamat', 'Ketua Majelis Wali Amanat', 'pengamat', 'rektorat', 'Majelis Wali Amanat'],
-            // Akun tamu untuk pengunjung yang ingin melihat-lihat tanpa mendaftar (tombol "Masuk sebagai tamu").
-            ['tamu', 'tamu', 'Tamu Demo', 'pengamat', 'rektorat', 'Tamu (hanya lihat)'],
         ];
     }
 
@@ -339,12 +333,9 @@ class UnjDemoSeeder extends DemoSeeder
         ];
     }
 
-    protected function seedEvidenceAndLed(AccreditationProject $project): void
+    protected function highlightEvidence(): array
     {
-        parent::seedEvidenceAndLed($project);
-
-        // Bukti unggulan yang bersumber dari laman resmi UNJ.
-        $highlights = [
+        return [
             [4, 'sk', 'SK BAN-PT Akreditasi Institusi Peringkat Unggul Universitas Negeri Jakarta', '45/SK/BAN-PT/Akred/PT/II/2021', '2021-02-02', '2027-02-02', 'https://unj.ac.id/akreditasi-unj/'],
             [4, 'data', 'Rekap 59 program studi terakreditasi internasional (ASIIN 17, AQAS 21, FIBAA 21)', null, '2026-09-01', null, 'https://spm.unj.ac.id/?page_id=16696'],
             [24, 'peraturan', 'PP Nomor 31 Tahun 2024 tentang Perguruan Tinggi Negeri Badan Hukum Universitas Negeri Jakarta', 'PP 31/2024', '2024-08-14', null, 'https://peraturan.bpk.go.id/Details/296643'],
@@ -354,28 +345,6 @@ class UnjDemoSeeder extends DemoSeeder
             [39, 'lainnya', 'QS Asia University Rankings 2026 peringkat 951-1000 dan QS Southeast Asia peringkat 153', null, '2025-11-04', null, 'https://unj.ac.id/'],
             [9, 'sertifikat', 'Sertifikat akreditasi A Perpustakaan UNJ dari Perpustakaan Nasional RI', null, '2026-09-15', '2031-09-15', 'https://lib.unj.ac.id/'],
         ];
-        $evidence = app(EvidenceService::class);
-        $uploader = $this->users['pic.lpm'];
-
-        foreach ($highlights as [$no, $type, $title, $number, $date, $until, $url]) {
-            $unit = $this->unitForIndicator($no);
-            $doc = Document::create([
-                'owner_unit_id' => $this->units[$unit]->id, 'title' => $title, 'doc_type' => $type, 'number' => $number,
-                'doc_date' => $date, 'valid_until' => $until, 'approved_by' => in_array($type, ['sk', 'peraturan', 'kebijakan'], true) ? 'Pejabat berwenang' : null,
-                'confidentiality' => 'publik', 'is_public' => true, 'status' => DocumentStatus::Draft, 'uploaded_by' => $uploader->id,
-                'description' => 'Bukti unggulan dari laman resmi UNJ untuk indikator '.$no.'.',
-            ]);
-            $evidence->addVersion($doc, null, $url, $uploader);
-            $doc->forceFill(['status' => DocumentStatus::Valid, 'validated_by' => $this->users['manajer']->id, 'validated_at' => now()->subDays(mt_rand(2, 20))])->save();
-
-            $item = WorkItem::with('subIndicator.descriptors.keywords')->where('accreditation_project_id', $project->id)
-                ->whereHas('subIndicator.indicator', fn ($query) => $query->where('number', $no))->first();
-            $keyword = $item?->subIndicator->descriptorFor(Track::Excellent)?->keywords->first() ?? $item?->subIndicator->descriptorFor(Track::Accredited)?->keywords->first();
-
-            if ($keyword) {
-                EvidenceLink::firstOrCreate(['document_id' => $doc->id, 'work_item_id' => $item->id, 'keyword_id' => $keyword->id], ['relevance_note' => 'Bukti unggulan: '.$keyword->text]);
-            }
-        }
     }
 
     protected function reconciliationNotes(): array

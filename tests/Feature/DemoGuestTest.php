@@ -12,7 +12,7 @@ class DemoGuestTest extends DemoTestCase
     {
         $this->get('/untuk-pimpinan')->assertOk()->assertSee('Akredia untuk Pimpinan Perguruan Tinggi')->assertDontSee('/demo/tamu');
         $this->get('/demo/tamu')->assertNotFound();
-        $this->get('/app/login')->assertOk()->assertSee('Akredia untuk Pimpinan Perguruan Tinggi')->assertDontSee('Masuk sebagai tamu');
+        $this->get('/app/login')->assertOk()->assertSee('Akredia untuk Pimpinan Perguruan Tinggi')->assertDontSee('Masuk sebagai Tamu');
     }
 
     public function test_tamu_masuk_ke_data_demo_dan_hanya_melihat(): void
@@ -22,11 +22,12 @@ class DemoGuestTest extends DemoTestCase
         $unit = Unit::withoutGlobalScopes()->where('institution_id', $institution->id)->firstOrFail();
         Membership::withoutGlobalScopes()->create(['institution_id' => $institution->id, 'user_id' => $guest->id, 'unit_id' => $unit->id, 'role' => 'pengamat', 'position_title' => 'Tamu']);
 
-        $this->get('/app/login')->assertSee('Masuk sebagai tamu');
-        $this->get('/demo/tamu')->assertRedirect('/app/'.$institution->slug);
+        $this->get('/app/login')->assertSee('Masuk sebagai Tamu')->assertSee('Pilih perguruan tinggi contoh')->assertSee($institution->name);
+        $this->get('/demo/tamu?pt=tidak-ada')->assertRedirect('/app/'.$institution->slug);
+        $this->get('/demo/tamu?pt='.$institution->slug)->assertRedirect('/app/'.$institution->slug);
         $this->assertAuthenticatedAs($guest);
 
-        $this->get('/app/'.$institution->slug)->assertOk()->assertSee('DATA DEMO')->assertSee('tamu (hanya lihat)', false);
+        $this->get('/app/'.$institution->slug)->assertOk()->assertSee('DATA DEMO')->assertSee('Mode tamu')->assertSee('tamu (hanya lihat)', false);
         $this->get('/app/'.$institution->slug.'/panduan/untuk-pimpinan')->assertOk();
         $this->get('/app/profile')->assertRedirect();
     }

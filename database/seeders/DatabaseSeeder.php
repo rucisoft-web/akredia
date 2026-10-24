@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         }
 
         if (config('akredia.demo.enabled')) {
-            $this->call([DemoSeeder::class, UnjDemoSeeder::class]);
+            $this->call([UnjDemoSeeder::class, BinusDemoSeeder::class, PolbanDemoSeeder::class]);
         }
     }
 }

@@ -89,6 +89,7 @@ class AppPanelProvider extends PanelProvider
                 .'<script src="'.$asset('js/akredia.js').'" defer></script>'
             ))
             ->renderHook(PanelsRenderHook::FOOTER, fn () => view('filament.footer'))
+            ->renderHook(PanelsRenderHook::BODY_START, fn () => view('filament.guest-ribbon'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.demo-banner'))
             ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.login-links'))
             ->middleware([

@@ -255,10 +255,32 @@ span.ak-metric { display: inline; padding: .05rem .35rem; border-radius: 5px; fo
 .ak-demo-banner a { color: inherit; font-weight: 700; text-decoration: underline; }
 .ak-demo-tag { flex: none; background: #ea580c; color: #fff; font-weight: 800; font-size: .7rem; letter-spacing: .06em; padding: .15rem .5rem; border-radius: .4rem; margin-top: .1rem; }
 .dark .ak-demo-banner { background: rgba(234,88,12,.12); border-color: rgba(234,88,12,.35); color: #fdba74; }
-.ak-login-links { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--ak-line); text-align: center; font-size: .85rem; }
-.ak-login-links p { color: var(--ak-muted); margin: .4rem 0 1rem; font-size: .8rem; }
-.ak-login-guest { display: block; padding: .6rem 1rem; border-radius: .6rem; border: 1px solid var(--ak-blue); color: var(--ak-blue); font-weight: 700; text-decoration: none; }
+.ak-login-demo { margin-top: 1.25rem; text-align: center; font-size: .85rem; }
+.ak-login-divider { display: flex; align-items: center; gap: .75rem; color: var(--ak-muted); font-size: .72rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 1rem; }
+.ak-login-divider::before, .ak-login-divider::after { content: ''; flex: 1; border-top: 1px solid var(--ak-line); }
+.ak-login-label { text-align: left; font-weight: 600; margin: 0 0 .5rem; color: var(--ak-ink); }
+.ak-login-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: .5rem; margin-bottom: .75rem; }
+.ak-login-card { position: relative; display: flex; flex-direction: column; gap: .2rem; text-align: left; padding: .65rem .7rem; border: 1px solid var(--ak-line); border-radius: .7rem; cursor: pointer; line-height: 1.25; transition: border-color .15s, background .15s; }
+.ak-login-card input { position: absolute; opacity: 0; pointer-events: none; }
+.ak-login-card b { color: var(--ak-blue); font-size: .85rem; }
+.ak-login-card small { color: var(--ak-muted); font-size: .72rem; }
+.ak-login-card:hover { border-color: #b3cdea; }
+.ak-login-card:has(input:checked) { border: 2px solid #c08a2e; background: #fdf8ef; padding: calc(.65rem - 1px) calc(.7rem - 1px); }
+.ak-login-card:has(input:focus-visible) { outline: 2px solid var(--ak-blue); outline-offset: 2px; }
+.dark .ak-login-card b { color: #93c5fd; }
+.dark .ak-login-card:has(input:checked) { background: rgba(192,138,46,.12); }
+.ak-login-guest { display: block; width: 100%; padding: .65rem 1rem; border-radius: .6rem; border: 1px solid var(--ak-blue); background: transparent; color: var(--ak-blue); font-weight: 700; font-size: .9rem; cursor: pointer; }
 .ak-login-guest:hover { background: var(--ak-blue-50); }
 .dark .ak-login-guest { color: #93c5fd; border-color: #3b82f6; }
-.ak-login-pimpinan { color: var(--ak-blue); font-weight: 600; text-decoration: none; }
-.dark .ak-login-pimpinan { color: #93c5fd; }
+.ak-login-note { color: var(--ak-muted); margin: .6rem 0 1rem; font-size: .78rem; }
+.ak-login-pimpinan { color: #a26f17; font-weight: 700; text-decoration: none; }
+.ak-login-pimpinan:hover { text-decoration: underline; }
+.dark .ak-login-pimpinan { color: #e7b45a; }
+.ak-login-trust { margin: 1rem 0 0; padding-top: .9rem; border-top: 1px solid var(--ak-line); color: var(--ak-muted); font-size: .75rem; }
+.ak-guest-ribbon { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem 1rem; padding: .4rem 1rem; background: #17406f; color: #e2ecf8; font-size: .8rem; position: relative; z-index: 31; }
+.ak-guest-mode { font-weight: 700; letter-spacing: .02em; }
+.ak-guest-switch { display: inline-flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
+.ak-guest-switch a { color: #fff; text-decoration: none; padding: .1rem .55rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.35); font-weight: 600; }
+.ak-guest-switch a:hover { background: rgba(255,255,255,.12); }
+.ak-guest-switch a.is-active { background: #f5c26b; border-color: #f5c26b; color: #17406f; }
+.ak-guest-more { color: #f5c26b; font-weight: 600; text-decoration: none; }

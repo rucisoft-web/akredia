@@ -93,6 +93,12 @@ class DemoSeeder extends Seeder
     /** Singkatan institusi untuk nomor SK dan teks contoh. */
     protected string $short = 'UNM';
 
+    /** Sebutan pimpinan tertinggi (Rektor, Direktur, Ketua). */
+    protected string $leaderTitle = 'Rektor';
+
+    /** Akun tamu bersama ikut menjadi anggota institusi ini (pilihan "Masuk sebagai Tamu" di halaman login). */
+    protected bool $guestAccess = false;
+
     public function run(): void
     {
         mt_srand(2027);
@@ -240,6 +246,11 @@ class DemoSeeder extends Seeder
             ]);
             Membership::create(['user_id' => $user->id, 'unit_id' => $this->units[$unit]->id, 'role' => $role, 'position_title' => $title]);
             $this->users[$key] = $user;
+        }
+
+        if ($this->guestAccess) {
+            $guest = User::updateOrCreate(['email' => User::DEMO_GUEST_EMAIL], ['name' => 'Tamu Demo', 'password' => Str::random(40), 'is_active' => true]);
+            Membership::create(['user_id' => $guest->id, 'unit_id' => $this->units['rektorat']->id, 'role' => 'pengamat', 'position_title' => 'Tamu (hanya lihat)']);
         }
 
         // Administrator platform juga dapat masuk ke PT contoh sebagai admin.
@@ -655,7 +666,7 @@ class DemoSeeder extends Seeder
                 $status = match (true) {
                     $counter % 41 === 7 => DocumentStatus::Expired,
                     $counter % 29 === 5 => DocumentStatus::Rejected,
-                    $roll <= 76 => DocumentStatus::Valid,
+                    $roll <= $this->progressProfile()['doc_valid'] => DocumentStatus::Valid,
                     $roll <= 90 => DocumentStatus::Submitted,
                     default => DocumentStatus::Draft,
                 };
@@ -671,7 +682,7 @@ class DemoSeeder extends Seeder
                 $doc = Document::create([
                     'owner_unit_id' => $this->units[$unit]->id, 'title' => Str::limit($title, 250, ''), 'doc_type' => $type,
                     'number' => $type === 'sk' ? sprintf('%03d/SK/%s/%s', mt_rand(1, 400), $this->short, $docDate->format('Y')) : null,
-                    'doc_date' => $docDate, 'approved_by' => in_array($type, ['kebijakan', 'peraturan', 'sk', 'pedoman', 'renstra'], true) ? 'Rektor' : null,
+                    'doc_date' => $docDate, 'approved_by' => in_array($type, ['kebijakan', 'peraturan', 'sk', 'pedoman', 'renstra'], true) ? $this->leaderTitle : null,
                     'valid_until' => $validUntil, 'confidentiality' => $isPublic ? 'publik' : ($type === 'data' ? 'rahasia' : 'internal'),
                     'is_public' => $isPublic, 'status' => DocumentStatus::Draft, 'uploaded_by' => $uploader->id,
                     'description' => 'Bukti untuk indikator '.$indicator->number.': '.Str::limit($indicator->statement, 160),
@@ -702,7 +713,8 @@ class DemoSeeder extends Seeder
         // Tautkan bukti ke kata kunci; status kertas kerja mengikuti status bukti.
         $items = WorkItem::with(['subIndicator.indicator', 'subIndicator.descriptors.keywords', 'assessments', 'ledSection', 'gapItems', 'project'])
             ->where('accreditation_project_id', $project->id)->get();
-        $ledPlan = ['ratified' => 16, 'reviewer_approved' => 28, 'review' => 20, 'revision' => 10, 'draft' => 20, 'empty' => 6];
+        $progress = $this->progressProfile();
+        $ledPlan = $progress['led'];
 
         foreach ($items as $idx => $item) {
             $docs = $docsByIndicator[$item->subIndicator->indicator->number] ?? [];
@@ -712,7 +724,7 @@ class DemoSeeder extends Seeder
             $linked = [];
 
             foreach ($keywords->values() as $k => $kw) {
-                $chance = $met === null ? 25 : ($met ? 92 : 45);
+                $chance = $met === null ? 25 : ($met ? $progress['evidence_met'] : 45);
 
                 if ($docs && mt_rand(1, 100) <= $chance) {
                     $doc = $docs[$k % count($docs)];
@@ -776,6 +788,103 @@ class DemoSeeder extends Seeder
             if (in_array($plan, ['review', 'revision'], true)) {
                 LedComment::create(['led_section_id' => $section->id, 'user_id' => $reviewer->id, 'quote' => 'Evaluasi',
                     'body' => $plan === 'revision' ? 'Mohon tambahkan data tren TS-2 s.d. TS dan tautkan laporan AMI.' : 'Sudah cukup baik, periksa kembali konsistensi angka dengan LKPT.']);
+            }
+        }
+
+        $this->seedHighlights($project);
+    }
+
+    /**
+     * Kemajuan penyusunan: bobot status bagian LED, peluang kata kunci berbukti, dan porsi dokumen valid.
+     *
+     * @return array{led: array<string, int>, evidence_met: int, doc_valid: int}
+     */
+    protected function progressProfile(): array
+    {
+        return ['led' => ['ratified' => 16, 'reviewer_approved' => 28, 'review' => 20, 'revision' => 10, 'draft' => 20, 'empty' => 6], 'evidence_met' => 92, 'doc_valid' => 76];
+    }
+
+    /**
+     * Struktur organisasi dan program studi dari daftar ringkas.
+     *
+     * @param  array{0: string, 1: string, 2: string}  $top  [kode, nama, pimpinan] unit pimpinan tertinggi
+     * @param  array<string, array{string, string, string, string}>  $units  kunci => [kode, nama, jenis, kepala]
+     * @param  array<string, array{string, string, string}>  $faculties  kunci => [kode, nama, kepala]
+     * @param  list<array>  $programs  [kunci, fakultas, kode, nama, jenjang, dibuka, lembaga, peringkat, berlaku s.d., dosen tetap, mahasiswa aktif TS]
+     * @param  array<string, array{string, int, int}>  $intl  kunci prodi => [lembaga internasional, mulai, berakhir]
+     */
+    protected function createOrganisation(array $top, array $units, array $faculties, array $programs, array $intl = [], string $periodStart = '09-01'): void
+    {
+        [$code, $name, $head] = $top;
+        $rektorat = Unit::create(['code' => $code, 'name' => $name, 'type' => 'rektorat', 'head_name' => $head]);
+        $this->units['rektorat'] = $rektorat;
+
+        foreach ($units as $key => [$code, $name, $type, $head]) {
+            $this->units[$key] = Unit::create(['parent_id' => $rektorat->id, 'code' => $code, 'name' => $name, 'type' => $type, 'head_name' => $head]);
+        }
+
+        foreach ($faculties as $key => [$code, $name, $head]) {
+            $this->units[$key] = Unit::create(['parent_id' => $rektorat->id, 'code' => $code, 'name' => $name, 'type' => 'fakultas', 'head_name' => $head]);
+        }
+
+        foreach ($programs as [$key, $fac, $code, $name, $level, $opened, $agency, $rank, $until, $lecturers, $students]) {
+            $program = StudyProgram::create(['unit_id' => $this->units[$fac]->id, 'code_pddikti' => $code, 'name' => $name, 'level' => $level, 'opened_year' => $opened]);
+            $program->setAttribute('demo_lecturers', $lecturers);
+            $program->setAttribute('demo_students', $students);
+            $this->programs[$key] = $program;
+
+            $validUntil = Carbon::parse($until);
+            ProgramAccreditation::create([
+                'study_program_id' => $program->id, 'agency' => $agency, 'rank' => $rank,
+                'sk_number' => sprintf('%04d/SK/%s/Akred/%s/%s', mt_rand(1000, 9999), strtoupper(str_replace('_', '-', $agency)), $level, $validUntil->copy()->subYears(5)->format('m/Y')),
+                'sk_date' => $validUntil->copy()->subYears(5), 'valid_until' => $validUntil, 'is_current' => true,
+            ]);
+
+            if ($international = $intl[$key] ?? null) {
+                [$body, $from, $to] = $international;
+                ProgramAccreditation::create([
+                    'study_program_id' => $program->id, 'agency' => 'intl', 'rank' => 'internasional', 'sk_number' => "{$body} {$from}-{$to}",
+                    'sk_date' => "{$from}-09-01", 'valid_until' => "{$to}-08-31", 'is_current' => false, 'is_international' => true,
+                ]);
+            }
+        }
+
+        foreach ([2023, 2024, 2025, 2026] as $y) {
+            AcademicPeriod::create(['name' => $y.'/'.($y + 1), 'year_start' => $y, 'starts_at' => "{$y}-{$periodStart}", 'ends_at' => Carbon::parse("{$y}-{$periodStart}")->addYear()->subDay()]);
+        }
+    }
+
+    /**
+     * Bukti unggulan yang bersumber dari laman resmi institusi.
+     *
+     * @return list<array{int, string, string, ?string, string, ?string, string}> [indikator, jenis, judul, nomor, tanggal, berlaku s.d., URL]
+     */
+    protected function highlightEvidence(): array
+    {
+        return [];
+    }
+
+    protected function seedHighlights(AccreditationProject $project): void
+    {
+        $evidence = app(EvidenceService::class);
+        $uploader = $this->users['pic.lpm'];
+
+        foreach ($this->highlightEvidence() as [$no, $type, $title, $number, $date, $until, $url]) {
+            $doc = Document::create([
+                'owner_unit_id' => $this->units[$this->unitForIndicator($no)]->id, 'title' => $title, 'doc_type' => $type, 'number' => $number,
+                'doc_date' => $date, 'valid_until' => $until, 'approved_by' => in_array($type, ['sk', 'peraturan', 'kebijakan'], true) ? 'Pejabat berwenang' : null,
+                'confidentiality' => 'publik', 'is_public' => true, 'status' => DocumentStatus::Draft, 'uploaded_by' => $uploader->id,
+                'description' => "Bukti unggulan dari laman resmi {$this->short} untuk indikator {$no}.",
+            ]);
+            $evidence->addVersion($doc, null, $url, $uploader);
+            $doc->forceFill(['status' => DocumentStatus::Valid, 'validated_by' => $this->users['manajer']->id, 'validated_at' => now()->subDays(mt_rand(2, 20))])->save();
+
+            $item = WorkItem::with('subIndicator.descriptors.keywords')->where('accreditation_project_id', $project->id)
+                ->whereHas('subIndicator.indicator', fn ($query) => $query->where('number', $no))->first();
+            $keyword = $item?->subIndicator->descriptorFor($project->track)?->keywords->first() ?? $item?->subIndicator->descriptorFor(Track::Accredited)?->keywords->first();
+
+            if ($keyword) {
+                EvidenceLink::firstOrCreate(['document_id' => $doc->id, 'work_item_id' => $item->id, 'keyword_id' => $keyword->id], ['relevance_note' => 'Bukti unggulan: '.$keyword->text]);
             }
         }
     }
@@ -925,7 +1034,7 @@ class DemoSeeder extends Seeder
 
         foreach ($decisions as $i => $row) {
             [$title, $when, $forum, $content] = $row;
-            $decidedBy = $row[4] ?? match ($forum) { 'yayasan' => 'Ketua Yayasan', 'mwa' => 'Ketua Majelis Wali Amanat', default => 'Rektor' };
+            $decidedBy = $row[4] ?? match ($forum) { 'yayasan' => 'Ketua Yayasan', 'mwa' => 'Ketua Majelis Wali Amanat', default => $this->leaderTitle };
             $decision = Decision::create(['accreditation_project_id' => $project->id, 'title' => $title, 'decision_date' => now()->modify($when), 'forum' => $forum, 'decided_by' => $decidedBy, 'content' => $content]);
 
             if ($i >= 2) {
@@ -1206,7 +1315,7 @@ class DemoSeeder extends Seeder
         $statement = Str::lcfirst(rtrim($item->subIndicator->statement, '.'));
 
         $paragraphs = [
-            "Penetapan\n{$this->pt->name} menetapkan kebijakan agar {$statement}. ".($kw[0] ?? 'Standar').' dituangkan dalam dokumen resmi yang disahkan Rektor'.$cite(0).'.',
+            "Penetapan\n{$this->pt->name} menetapkan kebijakan agar {$statement}. ".($kw[0] ?? 'Standar').' dituangkan dalam dokumen resmi yang disahkan '.$this->leaderTitle.$cite(0).'.',
             "Pelaksanaan\nSelama TS-2 sampai TS, pelaksanaan dipantau oleh unit penanggung jawab. ".($kw[1] ?? 'Pelaksanaan standar').' dilakukan secara konsisten di seluruh fakultas'.$cite(1).'.'.$metric,
             "Evaluasi\nEvaluasi dilakukan melalui Audit Mutu Internal tahunan, survei kepuasan, dan monitoring capaian indikator kinerja. ".($kw[2] ?? 'Hasil evaluasi').' dianalisis dan dilaporkan pada rapat tinjauan manajemen.',
             "Pengendalian\nTemuan evaluasi ditindaklanjuti dengan tindakan koreksi dan pencegahan (CAPA) yang dipantau LPM hingga terverifikasi efektif.",

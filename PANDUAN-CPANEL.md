@@ -187,14 +187,15 @@ Tanpa cron aplikasi tetap berjalan; dasbor dihitung ulang saat tombol *Perbarui 
 
 ### Situs demo / promosi
 
-Isi `AKREDIA_DEMO=true` lalu jalankan `php artisan akredia:demo` dan `php artisan optimize`. Ada dua institusi contoh:
+Isi `AKREDIA_DEMO=true` lalu jalankan `php artisan akredia:demo` dan `php artisan optimize`. Perintah ini memuat tiga perguruan tinggi contoh (sekitar 2 menit):
 
-- **Universitas Nusantara Mandiri** (fiktif, PTS) di `/app/unm`, akun `rektor@akredia.test`, `manajer@akredia.test`, `pic.lpm@akredia.test`, dan seterusnya.
-- **Universitas Negeri Jakarta** (PTN-BH, reakreditasi jalur Unggul) di `/app/unj`, akun `rektor@unj.akredia.test`, `wr1@unj.akredia.test`, `manajer@unj.akredia.test`, dan seterusnya.
+- **Universitas Negeri Jakarta** (PTN-BH, jalur Unggul) di `/app/unj`, akun `rektor@unj.akredia.test`, dan seterusnya.
+- **Universitas Bina Nusantara** (PTS, jalur Unggul, hampir siap diajukan) di `/app/binus`, akun `rektor@binus.akredia.test`, dan seterusnya.
+- **Politeknik Negeri Bandung** (PTN vokasi, tenggat mepet) di `/app/polban`, akun `direktur@polban.akredia.test`, dan seterusnya.
 
-Muat salah satu saja dengan `php artisan akredia:demo unm` atau `php artisan akredia:demo unj` (sekitar 40 detik). Daftar akun lengkap ada di README. Kata sandi semua akun: nilai `AKREDIA_DEMO_PASSWORD` (bawaan `Demo#2026akredia`).
+Muat satu saja dengan `php artisan akredia:demo unj` (atau `binus`, `polban`). Contoh fiktif lama Universitas Nusantara Mandiri tetap tersedia dengan `php artisan akredia:demo unm`, tetapi tidak muncul di pilihan tamu; hapus dari server dengan `php artisan akredia:remove-demo unm --force`. Daftar akun lengkap ada di README. Kata sandi semua akun: nilai `AKREDIA_DEMO_PASSWORD` (bawaan `Demo#2026akredia`).
 
-Pengunjung dapat melihat demo UNJ tanpa akun lewat tombol **Masuk sebagai tamu** di halaman login (akun `tamu@unj.akredia.test`, hanya lihat). Akun tamu dibuat oleh `php artisan akredia:demo unj`; bila demo UNJ dimuat sebelum fitur ini ada, jalankan ulang `php artisan akredia:demo unj --force` lalu `php artisan optimize:clear`. Matikan tombol tamu dengan `AKREDIA_DEMO_GUEST=false`.
+Pengunjung dapat melihat ketiga perguruan tinggi contoh tanpa akun lewat pilihan **Masuk sebagai Tamu** di halaman login (akun bersama `tamu@demo.akredia.test`, hanya lihat), lalu berganti perguruan tinggi dari pita di atas layar. Akun tamu dibuat oleh `php artisan akredia:demo`. Matikan pilihan tamu dengan `AKREDIA_DEMO_GUEST=false`.
 
 Halaman publik untuk pimpinan perguruan tinggi: `https://domain-anda/untuk-pimpinan`.
 

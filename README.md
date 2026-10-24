@@ -60,7 +60,9 @@ Untuk instalasi di hosting cPanel (termasuk tanpa Terminal), ikuti [PANDUAN-CPAN
 
 ## Data contoh
 
-Dengan `AKREDIA_DEMO=true`, perintah `php artisan migrate --seed` (atau `php artisan akredia:demo`) memuat **Universitas Nusantara Mandiri**, PTS akademik fiktif di Bandung yang sedang menyiapkan *Akreditasi Institusi 2027*: 18 prodi, sekitar 390 dosen, data 8 tahun, 115 dokumen bukti, narasi LED dalam berbagai status, temuan AMI, CAPA, risiko, simulasi visitasi, dan riwayat AKI 16 minggu. Satu syarat perlu (2A) sengaja belum terpenuhi agar alur pengendalian terlihat.
+Dengan `AKREDIA_DEMO=true`, perintah `php artisan migrate --seed` (atau `php artisan akredia:demo`) memuat tiga perguruan tinggi contoh: **Universitas Negeri Jakarta**, **BINUS University**, dan **Politeknik Negeri Bandung** (lihat di bawah). Profil diambil dari laman resmi masing-masing; angka kinerja dan aktivitas adalah ilustrasi.
+
+Contoh fiktif lama, `php artisan akredia:demo unm`, memuat **Universitas Nusantara Mandiri**, PTS akademik fiktif di Bandung yang sedang menyiapkan *Akreditasi Institusi 2027*: 18 prodi, sekitar 390 dosen, data 8 tahun, 115 dokumen bukti, narasi LED dalam berbagai status, temuan AMI, CAPA, risiko, simulasi visitasi, dan riwayat AKI 16 minggu. Satu syarat perlu (2A) sengaja belum terpenuhi agar alur pengendalian terlihat.
 
 Kata sandi semua akun demo: `Demo#2026akredia` (atau nilai `AKREDIA_DEMO_PASSWORD`).
 
@@ -96,13 +98,34 @@ Skenario: 91 prodi dengan sekitar 1.190 dosen tetap dan 43 ribu mahasiswa. Satu 
 | Reviewer, asesor internal | `reviewer@`, `reviewer2@`, `asesor@` |
 | PIC | `pic.lpm@`, `pic.akademik@`, `pic.sdm@`, `pic.keuangan@`, `pic.lppm@`, `pic.kemahasiswaan@`, `pic.sarpras@`, `pic.perencanaan@`, `pic.kerjasama@`, `pic.sekretariat@`, `pic.spi@`, `pic.tik@`, `pic.satgas@` |
 | Pengamat (MWA) | `pengamat@` |
-| Tamu (hanya lihat, tanpa kata sandi) | tombol **Masuk sebagai tamu** di halaman login |
 
-Setiap halaman institusi demo menampilkan penanda **DATA DEMO** yang menjelaskan bahwa data disusun untuk memperkenalkan fitur Akredia, bukan data resmi institusi. Pengunjung bisa melihat-lihat tanpa akun lewat tombol **Masuk sebagai tamu** (`/demo/tamu`): masuk sebagai Pengamat, tidak dapat mengubah data maupun membuka halaman profil. Tombol itu hanya muncul bila akun `tamu@unj.akredia.test` ada; matikan dengan `AKREDIA_DEMO_GUEST=false`.
+### Demo BINUS University
+
+`php artisan akredia:demo binus` memuat **Universitas Bina Nusantara** di `/app/binus`: PTS akademik yang menyiapkan *Reakreditasi Institusi 2027 jalur Unggul* dan sudah hampir siap diajukan (AKI sekitar 81, semua syarat perlu terpenuhi).
+
+- **Diambil dari binus.ac.id (Oktober 2026):** nama, kode PT, badan penyelenggara, Rektor, visi, delapan kampus, sekolah dan fakultas, SK akreditasi institusi Unggul (289/SK/BAN-PT/AK-ISK/PT/VI/2022), ABET untuk Teknik Industri, Teknik Sipil, dan Teknik Komputer, AACSB untuk BINUS Business School, serta QS WUR 2026 (851-900) dan THE WUR 2026 (1201-1500).
+- **Data ilustrasi:** nama Wakil Rektor dan pejabat lain, kode dan tanggal akreditasi prodi, dosen, mahasiswa, dan seluruh aktivitas. Akun: `rektor@binus.akredia.test`, `manajer@binus.akredia.test`, dan pola yang sama dengan UNJ.
+
+![Dasbor BINUS](docs/demo-binus-dasbor.png)
+
+### Demo Politeknik Negeri Bandung
+
+`php artisan akredia:demo polban` memuat **Politeknik Negeri Bandung** di `/app/polban`: PTN vokasi (IAPT 4.1 varian 3e) yang harus mengunggah reakreditasi dalam sebulan (AKI sekitar 68). Syarat perlu Unggul 4B (proporsi prodi Unggul) belum terpenuhi dan dua prodi D4 segera habis masa akreditasinya.
+
+- **Diambil dari polban.ac.id (Oktober 2026):** nama, alamat, visi, 10 jurusan, 41 program studi (D3, Sarjana Terapan, Magister Terapan), peringkat akreditasi institusi dan prodi yang tercantum, dan capaian UI GreenMetric.
+- **Data ilustrasi:** karena masa jabatan Direktur 2022-2026 berakhir Oktober 2026, nama Direktur, Wakil Direktur, dan pejabat dibuat fiktif; kode PT dan prodi, tanggal SK, dan seluruh aktivitas juga ilustrasi. Akun: `direktur@polban.akredia.test`, `wadir1@` s.d. `wadir4@`, `manajer@`, dan seterusnya.
+
+![Dasbor POLBAN](docs/demo-polban-dasbor.png)
+
+### Masuk sebagai tamu
+
+Halaman login menampilkan pilihan **Masuk sebagai Tamu** dengan kartu tiga perguruan tinggi contoh (UNJ, BINUS, POLBAN). Tamu masuk sebagai Pengamat (hanya lihat), tidak dapat mengubah data maupun membuka halaman profil, dan dapat berganti perguruan tinggi dari pita di atas layar. Setiap halaman institusi contoh menampilkan penanda **DATA DEMO**. Akun tamu bersama `tamu@demo.akredia.test` dibuat oleh `php artisan akredia:demo`; matikan pilihan tamu dengan `AKREDIA_DEMO_GUEST=false`.
+
+![Login tamu](docs/login-tamu.png)
 
 Halaman pengenalan **Akredia untuk Pimpinan Perguruan Tinggi** tersedia publik di `/untuk-pimpinan` (ditautkan dari halaman login) dan sebagai sub menu pertama grup *Panduan Pimpinan* di aplikasi.
 
-Hapus data contoh kapan saja: `php artisan akredia:remove-demo`.
+Hapus data contoh kapan saja: `php artisan akredia:remove-demo` (semua) atau `php artisan akredia:remove-demo unm` (satu institusi).
 
 ## Perintah artisan
 
@@ -110,7 +133,7 @@ Hapus data contoh kapan saja: `php artisan akredia:remove-demo`.
 |---|---|
 | `akredia:create-admin` | Buat atau perbarui administrator platform. |
 | `akredia:doctor` | Periksa PHP, ekstensi, database, izin folder, aset, dan cron. |
-| `akredia:demo [unm\|unj\|semua]` / `akredia:remove-demo` | Muat atau hapus data contoh. |
+| `akredia:demo [unj\|binus\|polban\|unm\|semua]` / `akredia:remove-demo [slug]` | Muat atau hapus data contoh (`semua` = UNJ, BINUS, POLBAN). |
 | `akredia:snapshot` | Hitung ulang AKI dan rekam snapshot harian (terjadwal 01.00). |
 | `akredia:reminders` | Pengingat tenggat dan eskalasi tugas terlambat (terjadwal 07.00). |
 | `akredia:check-links` | Periksa tautan bukti dan hyperlink LED (terjadwal mingguan). |

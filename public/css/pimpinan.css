@@ -45,3 +45,9 @@
 .akp summary { cursor: pointer; font-weight: 700; }
 .akp details p { color: var(--akp-muted); }
 .akp-end { text-align: center; } .akp-end p { margin-left: auto; margin-right: auto; } .akp-end .akp-cta { justify-content: center; }
+
+.akp-samples { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .75rem; margin: 1rem 0; }
+.akp-sample { display: flex; flex-direction: column; gap: .3rem; border: 1px solid var(--akp-line, #e2e8f0); border-radius: .8rem; padding: .9rem 1rem; font-size: .9rem; line-height: 1.5; }
+.akp-sample small { color: var(--akp-muted, #64748b); font-weight: 600; }
+.akp-sample-foot { margin-top: auto; padding-top: .4rem; font-size: .82rem; }
+.akp-sample-foot code { font-size: .78rem; }
