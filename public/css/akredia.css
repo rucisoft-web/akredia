@@ -249,3 +249,16 @@ span.ak-metric { display: inline; padding: .05rem .35rem; border-radius: 5px; fo
 .ak-tree .body { padding: .2rem .9rem .8rem; font-size: .84rem; }
 .ak-tree .sub { border-top: 1px dashed var(--ak-line); padding: .55rem 0; }
 .ak-report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1rem; }
+
+/* Penanda data demo dan tautan di halaman login. */
+.ak-demo-banner { display: flex; gap: .6rem; align-items: flex-start; margin: 0 0 1rem; padding: .7rem .9rem; border-radius: .75rem; background: #fff7ed; border: 1px solid #fed7aa; color: #7c2d12; font-size: .85rem; line-height: 1.5; }
+.ak-demo-banner a { color: inherit; font-weight: 700; text-decoration: underline; }
+.ak-demo-tag { flex: none; background: #ea580c; color: #fff; font-weight: 800; font-size: .7rem; letter-spacing: .06em; padding: .15rem .5rem; border-radius: .4rem; margin-top: .1rem; }
+.dark .ak-demo-banner { background: rgba(234,88,12,.12); border-color: rgba(234,88,12,.35); color: #fdba74; }
+.ak-login-links { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--ak-line); text-align: center; font-size: .85rem; }
+.ak-login-links p { color: var(--ak-muted); margin: .4rem 0 1rem; font-size: .8rem; }
+.ak-login-guest { display: block; padding: .6rem 1rem; border-radius: .6rem; border: 1px solid var(--ak-blue); color: var(--ak-blue); font-weight: 700; text-decoration: none; }
+.ak-login-guest:hover { background: var(--ak-blue-50); }
+.dark .ak-login-guest { color: #93c5fd; border-color: #3b82f6; }
+.ak-login-pimpinan { color: var(--ak-blue); font-weight: 600; text-decoration: none; }
+.dark .ak-login-pimpinan { color: #93c5fd; }

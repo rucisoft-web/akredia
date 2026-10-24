@@ -1,0 +1,47 @@
+/* Halaman "Akredia untuk Pimpinan Perguruan Tinggi" (publik dan di dalam panel). */
+.akp { --akp-blue: #1f528c; --akp-ink: #0f172a; --akp-muted: #475569; --akp-line: #e2e8f0; --akp-card: #fff; --akp-soft: #f1f5f9;
+  display: flex; flex-direction: column; gap: 1.1rem; max-width: 1080px; margin: 0 auto; color: var(--akp-ink); line-height: 1.6; }
+.dark .akp { --akp-ink: #e2e8f0; --akp-muted: #94a3b8; --akp-line: rgba(255,255,255,.1); --akp-card: rgba(255,255,255,.04); --akp-soft: rgba(255,255,255,.06); }
+.akp-hero { padding: 2rem 2.2rem; border-radius: 22px; color: #fff; background: radial-gradient(circle at 85% 15%, rgba(52,211,153,.25), transparent 40%), linear-gradient(135deg, #0b1d33, #17406f 45%, #2f68a8); }
+.akp-hero h1 { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 800; letter-spacing: -.02em; line-height: 1.2; margin: .4rem 0 .7rem; max-width: 820px; }
+.akp-hero h2 { font-size: 1.4rem; font-weight: 800; margin: 0 0 .4rem; }
+.akp-hero p { color: #dbeafe; max-width: 760px; margin: .3rem 0; }
+.akp-eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: .74rem; font-weight: 700; color: #93c5fd; }
+.akp-cta { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.1rem; }
+.akp-btn { display: inline-flex; align-items: center; padding: .7rem 1.2rem; border-radius: 12px; font-weight: 700; font-size: .95rem; background: #34d399; color: #052e1c !important; text-decoration: none !important; }
+.akp-btn:hover { background: #6ee7b7; }
+.akp-btn.ghost { background: rgba(255,255,255,.12); color: #fff !important; border: 1px solid rgba(255,255,255,.35); }
+.akp-note { font-size: .82rem; color: #bcd3ee !important; }
+.akp-card { background: var(--akp-card); border: 1px solid var(--akp-line); border-radius: 18px; padding: 1.4rem 1.6rem; box-shadow: 0 2px 12px rgba(15,23,42,.04); }
+.akp-card h2 { font-size: 1.25rem; font-weight: 800; letter-spacing: -.01em; margin: 0 0 .6rem; }
+.akp-card p { margin: .45rem 0; color: var(--akp-ink); }
+.akp a { color: var(--akp-blue); } .dark .akp a { color: #93c5fd; }
+.akp figure { margin: 1rem 0 .4rem; }
+.akp figure img { width: 100%; border-radius: 14px; border: 1px solid var(--akp-line); box-shadow: 0 10px 30px rgba(15,23,42,.12); display: block; }
+.akp figcaption { font-size: .8rem; color: var(--akp-muted); margin-top: .5rem; text-align: center; }
+.akp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .8rem; margin-top: .9rem; }
+.akp-grid div { background: var(--akp-soft); border-radius: 12px; padding: .85rem 1rem; }
+.akp-grid b { display: block; margin-bottom: .2rem; } .akp-grid span { font-size: .88rem; color: var(--akp-muted); }
+.akp-table { overflow-x: auto; }
+.akp table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 620px; }
+.akp th, .akp td { text-align: left; padding: .6rem .7rem; border-bottom: 1px solid var(--akp-line); vertical-align: top; }
+.akp th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--akp-muted); }
+.akp td:first-child { font-weight: 700; } .akp td:nth-child(2) { color: var(--akp-muted); } .akp td:last-child { color: var(--akp-ink); }
+.akp-road { list-style: none; padding: 0; margin: .8rem 0 0; display: flex; flex-direction: column; gap: .55rem; counter-reset: r; }
+.akp-road li { counter-increment: r; position: relative; padding: .8rem 1rem .8rem 3.4rem; border: 1px solid var(--akp-line); border-radius: 12px; background: var(--akp-card); }
+.akp-road li::before { content: counter(r); position: absolute; left: 1rem; top: .85rem; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--akp-blue); color: #fff; font-weight: 800; font-size: .85rem; display: grid; place-items: center; }
+.akp-road li.gate { counter-increment: none; background: #ecfdf5; border-color: #a7f3d0; color: #065f46; padding-left: 3.4rem; }
+.dark .akp-road li.gate { background: rgba(16,185,129,.12); color: #6ee7b7; border-color: rgba(16,185,129,.3); }
+.akp-road li.gate::before { content: '◆'; background: none; color: #059669; font-size: 1.1rem; }
+.akp-road .when { display: block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--akp-blue); }
+.akp-road b { display: block; } .akp-road li > span:last-child { font-size: .88rem; color: var(--akp-muted); }
+.akp-list { padding-left: 1.3rem; margin: .6rem 0; } .akp-list li { margin: .35rem 0; }
+.akp code { background: var(--akp-soft); padding: .1rem .4rem; border-radius: 6px; font-size: .85em; }
+.akp-weeks { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .7rem; margin: .8rem 0; }
+.akp-weeks div { border-left: 4px solid var(--akp-blue); background: var(--akp-soft); border-radius: 0 12px 12px 0; padding: .75rem .9rem; font-size: .88rem; }
+.akp-weeks span { display: block; font-weight: 800; color: var(--akp-blue); margin-bottom: .2rem; }
+.akp-bullets { padding-left: 1.2rem; margin: .4rem 0; } .akp-bullets li { margin: .45rem 0; }
+.akp details { border-bottom: 1px solid var(--akp-line); padding: .65rem 0; }
+.akp summary { cursor: pointer; font-weight: 700; }
+.akp details p { color: var(--akp-muted); }
+.akp-end { text-align: center; } .akp-end p { margin-left: auto; margin-right: auto; } .akp-end .akp-cta { justify-content: center; }

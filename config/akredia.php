@@ -18,6 +18,8 @@ return [
     'demo' => [
         'enabled' => env('AKREDIA_DEMO', false),
         'password' => env('AKREDIA_DEMO_PASSWORD', 'Demo#2026akredia'),
+        // Tombol "Masuk sebagai tamu" muncul hanya bila akun tamu demo UNJ ada (php artisan akredia:demo unj).
+        'guest' => env('AKREDIA_DEMO_GUEST', true),
     ],
 
     // Asisten AI (opsional). Kosongkan kunci untuk mematikan; pemeriksaan lokal tetap berjalan.

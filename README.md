@@ -96,6 +96,11 @@ Skenario: 91 prodi dengan sekitar 1.190 dosen tetap dan 43 ribu mahasiswa. Satu 
 | Reviewer, asesor internal | `reviewer@`, `reviewer2@`, `asesor@` |
 | PIC | `pic.lpm@`, `pic.akademik@`, `pic.sdm@`, `pic.keuangan@`, `pic.lppm@`, `pic.kemahasiswaan@`, `pic.sarpras@`, `pic.perencanaan@`, `pic.kerjasama@`, `pic.sekretariat@`, `pic.spi@`, `pic.tik@`, `pic.satgas@` |
 | Pengamat (MWA) | `pengamat@` |
+| Tamu (hanya lihat, tanpa kata sandi) | tombol **Masuk sebagai tamu** di halaman login |
+
+Setiap halaman institusi demo menampilkan penanda **DATA DEMO** yang menjelaskan bahwa data disusun untuk memperkenalkan fitur Akredia, bukan data resmi institusi. Pengunjung bisa melihat-lihat tanpa akun lewat tombol **Masuk sebagai tamu** (`/demo/tamu`): masuk sebagai Pengamat, tidak dapat mengubah data maupun membuka halaman profil. Tombol itu hanya muncul bila akun `tamu@unj.akredia.test` ada; matikan dengan `AKREDIA_DEMO_GUEST=false`.
+
+Halaman pengenalan **Akredia untuk Pimpinan Perguruan Tinggi** tersedia publik di `/untuk-pimpinan` (ditautkan dari halaman login) dan sebagai sub menu pertama grup *Panduan Pimpinan* di aplikasi.
 
 Hapus data contoh kapan saja: `php artisan akredia:remove-demo`.
 

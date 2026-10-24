@@ -194,6 +194,10 @@ Isi `AKREDIA_DEMO=true` lalu jalankan `php artisan akredia:demo` dan `php artisa
 
 Muat salah satu saja dengan `php artisan akredia:demo unm` atau `php artisan akredia:demo unj` (sekitar 40 detik). Daftar akun lengkap ada di README. Kata sandi semua akun: nilai `AKREDIA_DEMO_PASSWORD` (bawaan `Demo#2026akredia`).
 
+Pengunjung dapat melihat demo UNJ tanpa akun lewat tombol **Masuk sebagai tamu** di halaman login (akun `tamu@unj.akredia.test`, hanya lihat). Akun tamu dibuat oleh `php artisan akredia:demo unj`; bila demo UNJ dimuat sebelum fitur ini ada, jalankan ulang `php artisan akredia:demo unj --force` lalu `php artisan optimize:clear`. Matikan tombol tamu dengan `AKREDIA_DEMO_GUEST=false`.
+
+Halaman publik untuk pimpinan perguruan tinggi: `https://domain-anda/untuk-pimpinan`.
+
 Hapus data contoh kapan saja dengan `php artisan akredia:remove-demo --force`.
 
 ## 9. Memperbarui program

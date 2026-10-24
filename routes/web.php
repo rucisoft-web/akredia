@@ -1,11 +1,16 @@
 <?php
 
+use App\Http\Controllers\DemoController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\ReportController;
 use App\Http\Middleware\InstitutionMember;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/app');
+
+// Halaman pengenalan untuk pimpinan perguruan tinggi dan login tamu ke data demo UNJ.
+Route::get('/untuk-pimpinan', [DemoController::class, 'pimpinan'])->name('pimpinan');
+Route::get('/demo/tamu', [DemoController::class, 'guest'])->middleware('throttle:30,1')->name('demo.tamu');
 
 // Portal Bukti Publik: tautan yang ditempel di LED dan dibuka asesor tanpa login.
 Route::get('/bukti/{institution:slug}', [PublicController::class, 'evidenceIndex'])->name('bukti.index');

@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\App\Pages\DasborEksekutif;
 use App\Filament\App\Tenancy\DaftarInstitusi;
+use App\Http\Middleware\RestrictDemoGuest;
 use App\Http\Middleware\SetCurrentInstitution;
 use App\Models\Institution;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -58,7 +59,8 @@ class AppPanelProvider extends PanelProvider
             ->tenantMiddleware([SetCurrentInstitution::class], isPersistent: true)
             ->multiFactorAuthentication(
                 [AppAuthentication::make()->recoverable()],
-                isRequired: fn () => (bool) config('akredia.mfa_required'),
+                // Akun tamu demo dipakai bersama sehingga tidak bisa memasang MFA.
+                isRequired: fn () => config('akredia.mfa_required') && ! auth()->user()?->isDemoGuest(),
             )
             ->navigationGroups([
                 NavigationGroup::make('Ringkasan'),
@@ -87,6 +89,8 @@ class AppPanelProvider extends PanelProvider
                 .'<script src="'.$asset('js/akredia.js').'" defer></script>'
             ))
             ->renderHook(PanelsRenderHook::FOOTER, fn () => view('filament.footer'))
+            ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.demo-banner'))
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.login-links'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -98,6 +102,6 @@ class AppPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->authMiddleware([Authenticate::class]);
+            ->authMiddleware([Authenticate::class, RestrictDemoGuest::class]);
     }
 }

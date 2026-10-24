@@ -78,6 +78,14 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         return collect(explode(' ', $this->name))->filter()->take(2)->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode('');
     }
 
+    public const DEMO_GUEST_EMAIL = 'tamu@unj.akredia.test';
+
+    /** Akun tamu bersama untuk melihat data demo UNJ; tidak boleh mengubah profil atau kata sandi. */
+    public function isDemoGuest(): bool
+    {
+        return $this->email === self::DEMO_GUEST_EMAIL;
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         if (! $this->is_active) {

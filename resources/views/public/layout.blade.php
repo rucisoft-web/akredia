@@ -29,7 +29,12 @@
 </head>
 <body>
 <header><div class="wrap"><small>{{ $institution->name }}</small><h1>@yield('title')</h1></div></header>
-<main>@yield('content')</main>
+<main>
+@if ($institution->is_demo)
+<div class="card" style="background:#fff7ed;border-color:#fed7aa;color:#7c2d12;font-size:14px"><b>DATA DEMO.</b> Halaman ini memakai data demo untuk menjelaskan fitur-fitur Akredia. Profil institusi diambil dari laman resminya; dokumen dan angka lainnya adalah ilustrasi, bukan data resmi {{ $institution->name }}.</div>
+@endif
+@yield('content')
+</main>
 <footer>Dikelola dengan Akredia · {{ $institution->website }}</footer>
 </body>
 </html>

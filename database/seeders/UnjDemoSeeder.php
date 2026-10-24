@@ -270,6 +270,8 @@ class UnjDemoSeeder extends DemoSeeder
             ['pic.satgas', 'pic.satgas', 'Dr. Lina Marlina, M.Psi., Psikolog', 'pic', 'satgas', 'Ketua Satgas PPK'],
             ['data.feb', 'data.feb', 'Yoga Pratama, S.E., M.Ak.', 'pemilik_data', 'feb', 'Operator Data FEB'],
             ['pengamat', 'pengamat', 'Ketua Majelis Wali Amanat', 'pengamat', 'rektorat', 'Majelis Wali Amanat'],
+            // Akun tamu untuk pengunjung yang ingin melihat-lihat tanpa mendaftar (tombol "Masuk sebagai tamu").
+            ['tamu', 'tamu', 'Tamu Demo', 'pengamat', 'rektorat', 'Tamu (hanya lihat)'],
         ];
     }
 
