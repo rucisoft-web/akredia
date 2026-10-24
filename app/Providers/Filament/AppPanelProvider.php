@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\App\Pages\DasborEksekutif;
+use App\Filament\App\Tenancy\DaftarInstitusi;
 use App\Http\Middleware\SetCurrentInstitution;
 use App\Models\Institution;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -53,6 +54,7 @@ class AppPanelProvider extends PanelProvider
             ])
             ->font('Inter')
             ->tenant(Institution::class, slugAttribute: 'slug', ownershipRelationship: 'institution')
+            ->tenantRegistration(DaftarInstitusi::class)
             ->tenantMiddleware([SetCurrentInstitution::class], isPersistent: true)
             ->multiFactorAuthentication(
                 [AppAuthentication::make()->recoverable()],
