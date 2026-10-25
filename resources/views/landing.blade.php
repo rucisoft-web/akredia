@@ -29,6 +29,7 @@
             <a href="#keamanan">Keamanan &amp; AI</a>
             <a href="{{ route('pimpinan') }}">Untuk Pimpinan</a>
             <a href="#tanya-jawab">Tanya jawab</a>
+            <a href="https://rucisoft.id">Rucisoft.id</a>
         </nav>
         <a class="akl-btn outline small" href="{{ $signedIn ? url('/app') : $loginUrl }}">{{ $signedIn ? 'Buka aplikasi' : 'Masuk' }}</a>
     </div>
@@ -208,7 +209,7 @@
 
 <footer class="akl-foot">
     <div class="akl-wrap">
-        <b>Akredia</b> · persiapan akreditasi institusi IAPT 4.1 · Rucisoft.
+        <b>Akredia</b> · persiapan akreditasi institusi IAPT 4.1 · <a href="https://rucisoft.id" style="color:inherit;text-decoration:underline">Rucisoft</a> · <a href="https://rucisoft.id" style="color:inherit">rucisoft.id</a>
         <p>AKI dan proyeksi skor adalah alat manajemen internal, bukan prediksi resmi BAN-PT. Data pada perguruan tinggi contoh adalah data demo untuk menjelaskan fitur.</p>
     </div>
 </footer>
