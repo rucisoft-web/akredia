@@ -57,17 +57,7 @@
         </div>
     </section>
 
-    <section class="akl-sec">
-        <div class="akl-wrap">
-            <h2>Hal yang paling sering membuat persiapan akreditasi terlambat</h2>
-            <div class="akl-grid four">
-                <div class="akl-card"><h3>Kesiapan tidak terukur</h3><p>Pimpinan bergantung pada laporan lisan di rapat, sehingga masalah baru terlihat ketika tenggat sudah dekat.</p></div>
-                <div class="akl-card"><h3>Bukti tercecer</h3><p>Dokumen tersebar di folder bersama dan grup percakapan, nama berkas tidak seragam, dan SK yang kedaluwarsa tidak ada yang mengingatkan.</p></div>
-                <div class="akl-card"><h3>Syarat perlu terlewat</h3><p>Satu syarat perlu yang gagal menutup peringkat yang dituju, berapa pun skor lainnya, dan sering baru ketahuan saat penilaian.</p></div>
-                <div class="akl-card"><h3>Angka berbeda</h3><p>Jumlah mahasiswa, dosen, dan lulusan di laporan internal tidak sama dengan PDDikti, dan selisihnya muncul di depan asesor.</p></div>
-            </div>
-        </div>
-    </section>
+    @include('partials.rucisoft-alur')
 
     <section class="akl-sec soft" id="fitur">
         <div class="akl-wrap">
