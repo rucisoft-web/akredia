@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Services\EvidenceService;
 use App\Services\ExecutiveDashboard;
+use App\Services\InstrumentImporter;
 use App\Services\ReadinessCalculator;
 use App\Support\CurrentInstitution;
 use Database\Seeders\BinusDemoSeeder;
@@ -43,6 +44,16 @@ Artisan::command('akredia:create-admin {email?} {--name=} {--password=}', functi
     ]);
     $this->info("Administrator platform siap: {$user->email} (masuk di /platform)");
 })->purpose('Buat atau perbarui akun administrator platform');
+
+Artisan::command('akredia:instrument {--force : Jalankan tanpa konfirmasi}', function () {
+    // Menyelaraskan Pustaka Instrumen dengan database/data/iapt41.php (ambang metrik dan penanda syarat perlu).
+    if (! $this->option('force') && ! $this->confirm('Deskriptor, syarat perlu, dan ambang metrik yang diubah lewat Pustaka Instrumen akan ditimpa data bawaan. Lanjutkan?')) {
+        return;
+    }
+
+    app(InstrumentImporter::class)->seed();
+    $this->info('Pustaka Instrumen IAPT 4.1 diperbarui. Jalankan akredia:snapshot agar proyeksi dihitung ulang.');
+})->purpose('Perbarui Pustaka Instrumen IAPT 4.1 dari data bawaan aplikasi');
 
 Artisan::command('akredia:demo {institusi=semua : unj, binus, polban, unm, atau semua} {--force : Muat ulang tanpa konfirmasi}', function (string $institusi = 'semua') {
     // "semua" memuat tiga perguruan tinggi contoh yang dapat dibuka lewat "Masuk sebagai Tamu"; UNM (fiktif) dimuat terpisah.

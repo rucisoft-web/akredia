@@ -76,7 +76,7 @@ class InstrumentImporter
                     Metric::updateOrCreate(['code' => $m[0], 'instrument_variant_id' => $variantId], [
                         'name' => $m[1], 'formula' => $m[2], 'formula_text' => $m[3], 'unit' => $m[4], 'indicator_ref' => $m[5],
                         'accredited_min' => $m[6], 'accredited_max' => $m[7], 'excellent_min' => $m[8], 'excellent_max' => $m[9],
-                        'tolerance_pct' => $m[10], 'is_prerequisite' => in_array($m[0], ['DTJA', 'PRODI_AKR', 'MIN_DT', 'PDTT'], true), 'sort' => $sort,
+                        'tolerance_pct' => $m[10], 'is_prerequisite' => in_array($m[0], ['DTJA', 'PRODI_AKR', 'MIN_DT'], true), 'sort' => $sort,
                     ]);
                 }
             }

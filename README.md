@@ -27,6 +27,7 @@ Akredia mengubah pekerjaan akreditasi yang biasanya tersebar di folder, spreadsh
 | **SPMI** | Standar mutu, AMI, temuan, CAPA dengan verifikasi efektivitas oleh orang lain, rapat tinjauan manajemen. |
 | **Asesmen Lapangan** | Jadwal sesi, narasumber, bank pertanyaan per kelompok dengan status gladi, rekomendasi asesor yang dapat dijadikan tugas atau CAPA. |
 | **Laporan** | LKPT XLSX, kertas kerja XLSX, LED DOCX/cetak, laporan syarat perlu, ringkasan mingguan untuk pimpinan, log audit CSV. |
+| **Tombol Bantuan** | Tombol *Bantuan* di bilah atas setiap halaman membuka panel berisi penjelasan halaman, langkah kerja, arti setiap isian beserta contoh pengisian, ketentuan resmi BAN-PT, tabel LKPT terkait, dan teks resmi indikator IAPT 4.1 (Lampiran 3c dan Panduan LED) yang dapat ditelusuri untuk indikator 1–39. Isi ada di `resources/help/halaman.php` dan `database/data/iapt41-resmi-3c.php`. |
 | **Admin Platform** (`/platform`) | Institusi, pengguna, Pustaka Instrumen (ekspor/impor templat XLSX, ubah deskriptor dan syarat perlu), rumus metrik. |
 
 ### Peran pengguna
@@ -140,6 +141,7 @@ Hapus data contoh kapan saja: `php artisan akredia:remove-demo` (semua) atau `ph
 | `akredia:create-admin` | Buat atau perbarui administrator platform. |
 | `akredia:doctor` | Periksa PHP, ekstensi, database, izin folder, aset, dan cron. |
 | `akredia:demo [unj\|binus\|polban\|unm\|semua]` / `akredia:remove-demo [slug]` | Muat atau hapus data contoh (`semua` = UNJ, BINUS, POLBAN). |
+| `akredia:instrument` | Perbarui Pustaka Instrumen (syarat perlu, ambang metrik, deskriptor) dari data bawaan; menimpa ubahan manual. |
 | `akredia:snapshot` | Hitung ulang AKI dan rekam snapshot harian (terjadwal 01.00). |
 | `akredia:reminders` | Pengingat tenggat dan eskalasi tugas terlambat (terjadwal 07.00). |
 | `akredia:check-links` | Periksa tautan bukti dan hyperlink LED (terjadwal mingguan). |

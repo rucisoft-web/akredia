@@ -91,6 +91,8 @@ class AppPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::FOOTER, fn () => view('filament.footer'))
             ->renderHook(PanelsRenderHook::BODY_START, fn () => view('filament.guest-ribbon'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.demo-banner'))
+            ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => view('filament.help.button'))
+            ->renderHook(PanelsRenderHook::BODY_END, fn () => auth()->check() ? view('filament.help.panel') : '')
             ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.login-links'))
             ->middleware([
                 EncryptCookies::class,

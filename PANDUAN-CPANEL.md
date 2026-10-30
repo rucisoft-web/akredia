@@ -217,6 +217,8 @@ php artisan up
 
 Tanpa Terminal: upload zip versi baru, ekstrak menimpa folder `akredia` (zip tidak berisi `.env`, dan berkas di `storage` tidak terhapus), lalu jalankan `php artisan migrate --force` dan `php artisan optimize` lewat cron sekali jalan.
 
+Bila catatan rilis menyebut perubahan instrumen (mis. ambang metrik atau syarat perlu disesuaikan dengan Lampiran 3 resmi), jalankan juga `php artisan akredia:instrument --force` lalu `php artisan akredia:snapshot`. Perintah ini menimpa ubahan manual di Pustaka Instrumen.
+
 Selalu **backup database dan folder `storage/app/private`** (berkas bukti) sebelum memperbarui. Di cPanel: *Backup* › *Download a MySQL Database Backup*, dan kompres folder `storage/app/private` lewat File Manager.
 
 ## 10. Masalah umum

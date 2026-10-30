@@ -9,6 +9,7 @@ use App\Models\Survey;
 use App\Models\SurveyResponse;
 use App\Services\EvidenceService;
 use App\Support\CurrentInstitution;
+use App\Support\Help;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -46,6 +47,14 @@ class PublicController extends Controller
         abort_unless($version->file_path && Storage::disk(EvidenceService::DISK)->exists($version->file_path), 404);
 
         return Storage::disk(EvidenceService::DISK)->download($version->file_path, $version->original_name);
+    }
+
+    /** Rujukan resmi BAN-PT satu indikator untuk panel Bantuan (teks publik). */
+    public function helpIndicator(int $number)
+    {
+        abort_unless($ind = Help::official($number), 404);
+
+        return response()->view('help.indicator', ['ind' => $ind])->header('Cache-Control', 'public, max-age=86400');
     }
 
     public function survey(string $token)

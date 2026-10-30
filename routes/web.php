@@ -16,6 +16,8 @@ Route::get('/bukti/{institution:slug}', [PublicController::class, 'evidenceIndex
 Route::get('/bukti/{institution:slug}/{slug}', [PublicController::class, 'evidence'])->name('bukti.show');
 
 // Kuesioner kepuasan publik.
+Route::get('/bantuan/indikator/{number}', [PublicController::class, 'helpIndicator'])->whereNumber('number')->name('bantuan.indikator');
+
 Route::get('/survei/{token}', [PublicController::class, 'survey'])->name('survei.show');
 Route::post('/survei/{token}', [PublicController::class, 'submitSurvey'])->middleware('throttle:public-survey')->name('survei.submit');
 
