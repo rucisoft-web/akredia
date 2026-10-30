@@ -1,6 +1,7 @@
 {{-- Halaman depan publik: fitur utama Akredia dan pintu masuk tamu ke perguruan tinggi contoh. --}}
 @php
     use App\Http\Controllers\DemoController;
+    use App\Support\Workshop;
 
     $tryUrl = $guestUrl ? '#data-contoh' : $loginUrl;
     $signedIn = auth()->check();
@@ -26,6 +27,7 @@
         <nav class="akl-links" aria-label="Navigasi halaman">
             <a href="#fitur">Fitur</a>
             @if ($guestUrl)<a href="#data-contoh">Data contoh</a>@endif
+            <a href="#workshop">Workshop</a>
             <a href="#keamanan">Keamanan &amp; AI</a>
             <a href="{{ route('pimpinan') }}">Untuk Pimpinan</a>
             <a href="#tanya-jawab">Tanya jawab</a>
@@ -130,6 +132,40 @@
             </div>
         </section>
     @endif
+
+    <section class="akl-sec akl-ws" id="workshop">
+        <div class="akl-wrap">
+            <div class="akl-ws-head">
+                <div>
+                    <div class="akl-eyebrow">Workshop 2 hari · IAPT 4.1</div>
+                    <h2>{{ Workshop::TITLE }}</h2>
+                    <p class="akl-sub">{{ Workshop::TAGLINE }} Peserta pulang membawa peta syarat perlu, struktur tim, analisis kesenjangan awal, draf LED, dan rencana aksi 90 hari untuk kampusnya.</p>
+                </div>
+                <div class="akl-ws-partner">
+                    <img src="{{ asset('img/mitra-uin-sunan-kalijaga.png') }}" alt="Logo UIN Sunan Kalijaga Yogyakarta" width="72" height="101">
+                    <span>Bekerja sama dengan<b>{{ Workshop::PARTNER }}</b></span>
+                </div>
+            </div>
+            <div class="akl-grid two">
+                @foreach (Workshop::DAYS as $n => [$label, $theme, $sessions])
+                    <div class="akl-card akl-ws-day">
+                        <div class="akl-ws-daylabel">{{ $label }}</div>
+                        <h3>{{ $theme }}</h3>
+                        <ul class="akl-check">
+                            @foreach ($sessions as [$time, $title])
+                                @if (str_starts_with($title, 'Sesi'))<li>{{ \Illuminate\Support\Str::after($title, '· ') }}</li>@endif
+                            @endforeach
+                        </ul>
+                    </div>
+                @endforeach
+            </div>
+            <div class="akl-cta">
+                <a class="akl-btn" href="{{ route('workshop') }}">Lihat materi lengkap</a>
+                <a class="akl-btn outline" href="{{ Workshop::waUrl() }}" target="_blank" rel="noopener">Tanya jadwal &amp; daftar via WhatsApp</a>
+            </div>
+            <p class="akl-fine">Untuk pimpinan, LPM/SPM, tim akreditasi, dan pengelola data PDDikti. Dapat diselenggarakan terbuka maupun khusus untuk satu perguruan tinggi (in-house). Informasi: {{ Workshop::EMAIL }} · WA {{ Workshop::PHONE }}.</p>
+        </div>
+    </section>
 
     <section class="akl-sec" id="keamanan">
         <div class="akl-wrap">

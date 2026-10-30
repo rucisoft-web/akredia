@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Membership;
 use App\Models\Unit;
 use App\Models\User;
+use App\Support\Workshop;
 
 class DemoGuestTest extends DemoTestCase
 {
@@ -14,6 +15,15 @@ class DemoGuestTest extends DemoTestCase
         $this->get('/untuk-pimpinan')->assertOk()->assertSee('Akredia untuk Pimpinan Perguruan Tinggi')->assertDontSee('/demo/tamu');
         $this->get('/demo/tamu')->assertNotFound();
         $this->get('/app/login')->assertOk()->assertSee('Akredia untuk Pimpinan Perguruan Tinggi')->assertDontSee('Masuk sebagai Tamu');
+    }
+
+    public function test_penawaran_workshop_di_halaman_depan_dan_halaman_materi(): void
+    {
+        $this->get('/')->assertOk()->assertSee('id="workshop"', false)
+            ->assertSee(Workshop::TITLE)->assertSee('Pusat Studi Manajemen Perguruan Tinggi')->assertSee('/workshop');
+        $this->get('/workshop')->assertOk()->assertSee(Workshop::TITLE)
+            ->assertSee('Sesi 1 · Lanskap IAPT 4.1')->assertSee('Sesi 8 · Siap diasesmen')
+            ->assertSee('Praktik di Akredia')->assertSee('mitra-uin-sunan-kalijaga.png');
     }
 
     public function test_tamu_masuk_ke_data_demo_dan_hanya_melihat(): void

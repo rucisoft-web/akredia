@@ -115,11 +115,13 @@ Halaman login menampilkan pilihan **Masuk sebagai Tamu** dengan kartu perguruan 
 
 ### Halaman depan
 
-Alamat `/` kini menampilkan halaman depan publik: masalah yang sering menghambat persiapan, 12 fitur utama, sorotan Simulasi Penilaian, editor LED, dan Rekonsiliasi PD Dikti (bertanda DATA CONTOH), kartu tiga perguruan tinggi contoh dengan tombol **Masuk sebagai tamu** per kampus, keamanan dan AI, pemasangan cPanel, serta tanya jawab. Bila akun tamu belum ada, bagian data contoh disembunyikan dan tombol mengarah ke login. Pengguna yang sudah masuk melihat tombol **Buka aplikasi**.
+Alamat `/` kini menampilkan halaman depan publik: masalah yang sering menghambat persiapan, 12 fitur utama, sorotan Simulasi Penilaian, editor LED, dan Rekonsiliasi PD Dikti (bertanda DATA CONTOH), kartu dua perguruan tinggi contoh dengan tombol **Masuk sebagai tamu** per kampus, keamanan dan AI, pemasangan cPanel, serta tanya jawab. Bila akun tamu belum ada, bagian data contoh disembunyikan dan tombol mengarah ke login. Pengguna yang sudah masuk melihat tombol **Buka aplikasi**.
 
 ![Halaman depan](docs/halaman-depan.png)
 
 Halaman pengenalan **Akredia untuk Pimpinan Perguruan Tinggi** tersedia publik di `/untuk-pimpinan` (ditautkan dari halaman login) dan sebagai sub menu pertama grup *Panduan Pimpinan* di aplikasi.
+
+Bagian **Workshop** di halaman depan menawarkan workshop dua hari *Persiapan Akreditasi Institusi Perguruan Tinggi dengan Akredia* bersama Pusat Studi Manajemen Perguruan Tinggi UIN Sunan Kalijaga. Materi lengkap (8 sesi, praktik di Akredia, dan luaran tiap sesi) ada di `/workshop`; isinya diatur di `app/Support/Workshop.php`.
 
 Hapus data contoh kapan saja: `php artisan akredia:remove-demo` (semua) atau `php artisan akredia:remove-demo unm` (satu institusi).
 

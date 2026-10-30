@@ -9,15 +9,17 @@ use Illuminate\Support\Facades\Route;
 // Halaman depan publik, halaman untuk pimpinan perguruan tinggi, dan login tamu ke perguruan tinggi contoh.
 Route::get('/', [DemoController::class, 'home'])->name('home');
 Route::get('/untuk-pimpinan', [DemoController::class, 'pimpinan'])->name('pimpinan');
+Route::get('/workshop', [DemoController::class, 'workshop'])->name('workshop');
 Route::get('/demo/tamu', [DemoController::class, 'guest'])->middleware('throttle:30,1')->name('demo.tamu');
 
 // Portal Bukti Publik: tautan yang ditempel di LED dan dibuka asesor tanpa login.
 Route::get('/bukti/{institution:slug}', [PublicController::class, 'evidenceIndex'])->name('bukti.index');
 Route::get('/bukti/{institution:slug}/{slug}', [PublicController::class, 'evidence'])->name('bukti.show');
 
-// Kuesioner kepuasan publik.
+// Rujukan resmi indikator untuk panel Bantuan.
 Route::get('/bantuan/indikator/{number}', [PublicController::class, 'helpIndicator'])->whereNumber('number')->name('bantuan.indikator');
 
+// Kuesioner kepuasan publik.
 Route::get('/survei/{token}', [PublicController::class, 'survey'])->name('survei.show');
 Route::post('/survei/{token}', [PublicController::class, 'submitSurvey'])->middleware('throttle:public-survey')->name('survei.submit');
 

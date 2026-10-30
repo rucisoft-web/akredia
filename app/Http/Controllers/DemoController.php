@@ -43,6 +43,12 @@ class DemoController extends Controller
         ]);
     }
 
+    /** Penawaran workshop dua hari beserta materi lengkapnya. */
+    public function workshop(): View
+    {
+        return view('workshop', ['loginUrl' => self::loginUrl()]);
+    }
+
     public function guest(Request $request): RedirectResponse
     {
         $samples = self::samples();
