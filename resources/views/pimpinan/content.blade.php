@@ -73,7 +73,7 @@
 
     <section class="akp-card">
         <h2>Coba dalam 15 menit</h2>
-        <p>Cukup peramban, tanpa instalasi. Ada tiga perguruan tinggi contoh dengan <b>data demo</b> yang disusun untuk menjelaskan fitur Akredia: profilnya diambil dari laman resmi, sedangkan angka kinerja, nama staf, dan aktivitas adalah ilustrasi.</p>
+        <p>Cukup peramban, tanpa instalasi. Ada dua perguruan tinggi contoh dengan <b>data demo</b> yang disusun untuk menjelaskan fitur Akredia: profilnya diambil dari laman resmi, sedangkan angka kinerja, nama staf, dan aktivitas adalah ilustrasi.</p>
         @php($tamu = fn (string $slug) => $guestUrl ? \App\Http\Controllers\DemoController::guestUrl($slug) : null)
         <div class="akp-samples">
             @foreach (\App\Http\Controllers\DemoController::STORIES as $slug => [$name, $kind, $story, $email])
@@ -131,7 +131,7 @@
     @if ($standalone && $guestUrl)
         <section class="akp-hero akp-end">
             <div>
-                <h2>Lihat sendiri dengan data demo UNJ, BINUS, atau POLBAN</h2>
+                <h2>Lihat sendiri dengan data demo UNJ atau UIN Sunan Kalijaga</h2>
                 <p>Masuk sebagai tamu dan jelajahi dasbor, kertas kerja, LED, dan simulasi skor. Tamu hanya dapat melihat, dan perguruan tinggi contoh dapat diganti dari pita di atas layar.</p>
                 <div class="akp-cta"><a class="akp-btn" href="{{ $guestUrl }}">Masuk sebagai tamu</a></div>
             </div>

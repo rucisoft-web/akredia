@@ -11,9 +11,8 @@ use App\Services\ExecutiveDashboard;
 use App\Services\InstrumentImporter;
 use App\Services\ReadinessCalculator;
 use App\Support\CurrentInstitution;
-use Database\Seeders\BinusDemoSeeder;
 use Database\Seeders\DemoSeeder;
-use Database\Seeders\PolbanDemoSeeder;
+use Database\Seeders\UinSukaDemoSeeder;
 use Database\Seeders\UnjDemoSeeder;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Artisan;
@@ -55,13 +54,13 @@ Artisan::command('akredia:instrument {--force : Jalankan tanpa konfirmasi}', fun
     $this->info('Pustaka Instrumen IAPT 4.1 diperbarui. Jalankan akredia:snapshot agar proyeksi dihitung ulang.');
 })->purpose('Perbarui Pustaka Instrumen IAPT 4.1 dari data bawaan aplikasi');
 
-Artisan::command('akredia:demo {institusi=semua : unj, binus, polban, unm, atau semua} {--force : Muat ulang tanpa konfirmasi}', function (string $institusi = 'semua') {
-    // "semua" memuat tiga perguruan tinggi contoh yang dapat dibuka lewat "Masuk sebagai Tamu"; UNM (fiktif) dimuat terpisah.
-    $all = [UnjDemoSeeder::SLUG => UnjDemoSeeder::class, BinusDemoSeeder::SLUG => BinusDemoSeeder::class, PolbanDemoSeeder::SLUG => PolbanDemoSeeder::class];
+Artisan::command('akredia:demo {institusi=semua : unj, uin-suka, unm, atau semua} {--force : Muat ulang tanpa konfirmasi}', function (string $institusi = 'semua') {
+    // "semua" memuat perguruan tinggi contoh yang dapat dibuka lewat "Masuk sebagai Tamu"; UNM (fiktif) dimuat terpisah.
+    $all = [UnjDemoSeeder::SLUG => UnjDemoSeeder::class, UinSukaDemoSeeder::SLUG => UinSukaDemoSeeder::class];
     $seeders = collect($all + [DemoSeeder::SLUG => DemoSeeder::class])->only($institusi === 'semua' ? array_keys($all) : [$institusi]);
 
     if ($seeders->isEmpty()) {
-        return $this->error('Pilihan institusi: unj, binus, polban, unm, atau semua.');
+        return $this->error('Pilihan institusi: unj, uin-suka, unm, atau semua.');
     }
 
     if (Institution::whereIn('slug', $seeders->keys())->exists() && ! $this->option('force') && ! $this->confirm('Data contoh sudah ada dan akan dimuat ulang. Lanjutkan?')) {
@@ -74,7 +73,7 @@ Artisan::command('akredia:demo {institusi=semua : unj, binus, polban, unm, atau 
 
     // Akun tamu lama (satu institusi) digantikan akun tamu bersama.
     User::where('email', 'tamu@unj.akredia.test')->delete();
-})->purpose('Muat data contoh: UNJ, BINUS, dan POLBAN (profil dari laman resmi, angka ilustrasi) atau UNM (fiktif)');
+})->purpose('Muat data contoh: UNJ dan UIN Sunan Kalijaga (profil dari laman resmi, angka ilustrasi) atau UNM (fiktif)');
 
 Artisan::command('akredia:remove-demo {institusi? : slug institusi contoh; kosongkan untuk semua} {--force}', function (?string $institusi = null) {
     $demo = Institution::where('is_demo', true)->when($institusi, fn ($query) => $query->where('slug', $institusi))->get();

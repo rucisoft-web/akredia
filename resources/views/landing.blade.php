@@ -1,4 +1,4 @@
-{{-- Halaman depan publik: fitur utama Akredia dan pintu masuk tamu ke tiga perguruan tinggi contoh. --}}
+{{-- Halaman depan publik: fitur utama Akredia dan pintu masuk tamu ke perguruan tinggi contoh. --}}
 @php
     use App\Http\Controllers\DemoController;
 
@@ -47,7 +47,7 @@
                     <a class="akl-btn outline" href="{{ route('pimpinan') }}">Akredia untuk Pimpinan PT</a>
                 </div>
                 @if ($guestUrl)
-                    <p class="akl-note">Tanpa mendaftar. Anda masuk ke <b>{{ $samples->count() === 3 ? 'tiga ' : '' }}perguruan tinggi contoh</b> berisi data demo, hanya untuk dilihat. <a href="{{ route('pimpinan') }}">Baca panduan untuk pimpinan</a>.</p>
+                    <p class="akl-note">Tanpa mendaftar. Anda masuk ke <b>{{ [2 => 'dua ', 3 => 'tiga '][$samples->count()] ?? '' }}perguruan tinggi contoh</b> berisi data demo, hanya untuk dilihat. <a href="{{ route('pimpinan') }}">Baca panduan untuk pimpinan</a>.</p>
                 @endif
             </div>
             <figure class="akl-shot">
@@ -109,9 +109,9 @@
         <section class="akl-sec dark" id="data-contoh">
             <div class="akl-wrap">
                 <div class="akl-eyebrow">Coba sendiri</div>
-                <h2>{{ $samples->count() === 3 ? 'Tiga perguruan tinggi' : 'Perguruan tinggi' }} contoh dengan data demo</h2>
+                <h2>{{ [2 => 'Dua perguruan tinggi', 3 => 'Tiga perguruan tinggi'][$samples->count()] ?? 'Perguruan tinggi' }} contoh dengan data demo</h2>
                 <p class="akl-sub">Profil diambil dari laman resmi masing-masing perguruan tinggi, sedangkan angka kinerja, nama staf, dan aktivitas adalah ilustrasi. Setiap layar di aplikasi diberi label <b>DATA DEMO</b>.</p>
-                <div class="akl-grid three">
+                <div class="akl-grid {{ $samples->count() === 2 ? 'two' : 'three' }}">
                     @foreach ($samples as $pt)
                         @php([$name, $kind, $story, $email] = DemoController::STORIES[$pt->slug] ?? [$pt->name, $pt->type?->getLabel().' · '.$pt->city, 'Perguruan tinggi contoh dengan data demo untuk menjelajahi seluruh fitur Akredia.', null])
                         <div class="akl-sample">

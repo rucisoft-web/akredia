@@ -61,7 +61,7 @@ Untuk instalasi di hosting cPanel (termasuk tanpa Terminal), ikuti [PANDUAN-CPAN
 
 ## Data contoh
 
-Dengan `AKREDIA_DEMO=true`, perintah `php artisan migrate --seed` (atau `php artisan akredia:demo`) memuat tiga perguruan tinggi contoh: **Universitas Negeri Jakarta**, **BINUS University**, dan **Politeknik Negeri Bandung** (lihat di bawah). Profil diambil dari laman resmi masing-masing; angka kinerja dan aktivitas adalah ilustrasi.
+Dengan `AKREDIA_DEMO=true`, perintah `php artisan migrate --seed` (atau `php artisan akredia:demo`) memuat dua perguruan tinggi contoh: **Universitas Negeri Jakarta** dan **UIN Sunan Kalijaga Yogyakarta** (lihat di bawah). Profil diambil dari laman resmi masing-masing; angka kinerja dan aktivitas adalah ilustrasi.
 
 Contoh fiktif lama, `php artisan akredia:demo unm`, memuat **Universitas Nusantara Mandiri**, PTS akademik fiktif di Bandung yang sedang menyiapkan *Akreditasi Institusi 2027*: 18 prodi, sekitar 390 dosen, data 8 tahun, 115 dokumen bukti, narasi LED dalam berbagai status, temuan AMI, CAPA, risiko, simulasi visitasi, dan riwayat AKI 16 minggu. Satu syarat perlu (2A) sengaja belum terpenuhi agar alur pengendalian terlihat.
 
@@ -100,27 +100,16 @@ Skenario: 91 prodi dengan sekitar 1.190 dosen tetap dan 43 ribu mahasiswa. Satu 
 | PIC | `pic.lpm@`, `pic.akademik@`, `pic.sdm@`, `pic.keuangan@`, `pic.lppm@`, `pic.kemahasiswaan@`, `pic.sarpras@`, `pic.perencanaan@`, `pic.kerjasama@`, `pic.sekretariat@`, `pic.spi@`, `pic.tik@`, `pic.satgas@` |
 | Pengamat (MWA) | `pengamat@` |
 
-### Demo BINUS University
+### Demo UIN Sunan Kalijaga Yogyakarta
 
-`php artisan akredia:demo binus` memuat **Universitas Bina Nusantara** di `/app/binus`: PTS akademik yang menyiapkan *Reakreditasi Institusi 2027 jalur Unggul* dan sudah hampir siap diajukan (AKI sekitar 81, semua syarat perlu terpenuhi).
+`php artisan akredia:demo uin-suka` memuat **Universitas Islam Negeri Sunan Kalijaga Yogyakarta** di `/app/uin-suka`: PTN akademik di bawah Kementerian Agama (IAPT 4.1 varian 3b) yang memulai *Reakreditasi Institusi 2028 jalur Unggul* sejak dini (AKI sekitar 71). Syarat perlu terpenuhi; tim memperkuat analisis capaian kelulusan (12B), bukti dampak riset (19B), dan tindak lanjut survei kepuasan (34B).
 
-- **Diambil dari binus.ac.id (Oktober 2026):** nama, kode PT, badan penyelenggara, Rektor, visi, delapan kampus, sekolah dan fakultas, SK akreditasi institusi Unggul (289/SK/BAN-PT/AK-ISK/PT/VI/2022), ABET untuk Teknik Industri, Teknik Sipil, dan Teknik Komputer, AACSB untuk BINUS Business School, serta QS WUR 2026 (851-900) dan THE WUR 2026 (1201-1500).
-- **Data ilustrasi:** nama Wakil Rektor dan pejabat lain, kode dan tanggal akreditasi prodi, dosen, mahasiswa, dan seluruh aktivitas. Akun: `rektor@binus.akredia.test`, `manajer@binus.akredia.test`, dan pola yang sama dengan UNJ.
-
-![Dasbor BINUS](docs/demo-binus-dasbor.png)
-
-### Demo Politeknik Negeri Bandung
-
-`php artisan akredia:demo polban` memuat **Politeknik Negeri Bandung** di `/app/polban`: PTN vokasi (IAPT 4.1 varian 3e) yang harus mengunggah reakreditasi dalam sebulan (AKI sekitar 68). Syarat perlu Unggul 4B (proporsi prodi Unggul) belum terpenuhi dan dua prodi D4 segera habis masa akreditasinya.
-
-- **Diambil dari polban.ac.id (Oktober 2026):** nama, alamat, visi, 10 jurusan, 41 program studi (D3, Sarjana Terapan, Magister Terapan), peringkat akreditasi institusi dan prodi yang tercantum, dan capaian UI GreenMetric.
-- **Data ilustrasi:** karena masa jabatan Direktur 2022-2026 berakhir Oktober 2026, nama Direktur, Wakil Direktur, dan pejabat dibuat fiktif; kode PT dan prodi, tanggal SK, dan seluruh aktivitas juga ilustrasi. Akun: `direktur@polban.akredia.test`, `wadir1@` s.d. `wadir4@`, `manajer@`, dan seterusnya.
-
-![Dasbor POLBAN](docs/demo-polban-dasbor.png)
+- **Diambil dari uin-suka.ac.id dan laman LPM (Oktober 2026):** nama, alamat, visi, Rektor 2024-2028 (Prof. Noorhaidi Hasan), delapan fakultas dan Pascasarjana, SK akreditasi institusi Unggul (1121/SK/BAN-PT/Ak.Ppj/PT/XII/2023), ASIIN untuk Matematika, Fisika, Kimia, dan Biologi (sampai 2030), FIBAA untuk Studi Agama-Agama, peringkat pertama PTKIN di Webometrics Juli 2025, dan jabatan Rektor sebagai Presiden AIUA 2026-2028.
+- **Data ilustrasi:** kode PT dan prodi, masa berlaku SK, nama Wakil Rektor dan pejabat lain, peringkat dan tanggal akreditasi prodi, dosen, mahasiswa, dan seluruh aktivitas. Akun: `rektor@uin-suka.akredia.test`, `manajer@uin-suka.akredia.test`, dan pola yang sama dengan UNJ (Wakil Rektor `wr1@` s.d. `wr3@`).
 
 ### Masuk sebagai tamu
 
-Halaman login menampilkan pilihan **Masuk sebagai Tamu** dengan kartu tiga perguruan tinggi contoh (UNJ, BINUS, POLBAN). Tamu masuk sebagai Pengamat (hanya lihat): tombol buat, ubah, hapus, dan tindakan pengubah data lain disembunyikan, halaman profil tidak dapat dibuka, dan dapat berganti perguruan tinggi dari pita di atas layar. Setiap halaman institusi contoh menampilkan penanda **DATA DEMO**. Akun tamu bersama `tamu@demo.akredia.test` dibuat oleh `php artisan akredia:demo`; matikan pilihan tamu dengan `AKREDIA_DEMO_GUEST=false`.
+Halaman login menampilkan pilihan **Masuk sebagai Tamu** dengan kartu perguruan tinggi contoh (UNJ dan UIN Sunan Kalijaga). Tamu masuk sebagai Pengamat (hanya lihat): tombol buat, ubah, hapus, dan tindakan pengubah data lain disembunyikan, halaman profil tidak dapat dibuka, dan dapat berganti perguruan tinggi dari pita di atas layar. Setiap halaman institusi contoh menampilkan penanda **DATA DEMO**. Akun tamu bersama `tamu@demo.akredia.test` dibuat oleh `php artisan akredia:demo`; matikan pilihan tamu dengan `AKREDIA_DEMO_GUEST=false`.
 
 ![Login tamu](docs/login-tamu.png)
 
@@ -140,7 +129,7 @@ Hapus data contoh kapan saja: `php artisan akredia:remove-demo` (semua) atau `ph
 |---|---|
 | `akredia:create-admin` | Buat atau perbarui administrator platform. |
 | `akredia:doctor` | Periksa PHP, ekstensi, database, izin folder, aset, dan cron. |
-| `akredia:demo [unj\|binus\|polban\|unm\|semua]` / `akredia:remove-demo [slug]` | Muat atau hapus data contoh (`semua` = UNJ, BINUS, POLBAN). |
+| `akredia:demo [unj\|uin-suka\|unm\|semua]` / `akredia:remove-demo [slug]` | Muat atau hapus data contoh (`semua` = UNJ dan UIN Sunan Kalijaga). |
 | `akredia:instrument` | Perbarui Pustaka Instrumen (syarat perlu, ambang metrik, deskriptor) dari data bawaan; menimpa ubahan manual. |
 | `akredia:snapshot` | Hitung ulang AKI dan rekam snapshot harian (terjadwal 01.00). |
 | `akredia:reminders` | Pengingat tenggat dan eskalasi tugas terlambat (terjadwal 07.00). |

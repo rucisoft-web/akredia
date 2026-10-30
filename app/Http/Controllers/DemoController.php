@@ -17,13 +17,12 @@ use Illuminate\View\View;
 class DemoController extends Controller
 {
     /** Urutan kartu di halaman login. */
-    public const ORDER = ['unj', 'binus', 'polban'];
+    public const ORDER = ['unj', 'uin-suka'];
 
     /** Kartu perguruan tinggi contoh di halaman publik: nama, jenis dan jalur, skenario, akun pimpinan. */
     public const STORIES = [
         'unj' => ['Universitas Negeri Jakarta', 'PTN Badan Hukum · jalur Unggul', 'AKI sekitar 75. Satu syarat perlu Unggul (proporsi lektor kepala dan guru besar) belum terpenuhi; SK berakhir Februari 2027.', 'rektor@unj.akredia.test'],
-        'binus' => ['Universitas Bina Nusantara', 'PTS Akademik · jalur Unggul', 'AKI sekitar 81. Semua syarat perlu terpenuhi; tim menuntaskan bukti hilirisasi riset sebelum unggah Januari 2027.', 'rektor@binus.akredia.test'],
-        'polban' => ['Politeknik Negeri Bandung', 'PTN Vokasi · jalur Unggul', 'AKI sekitar 68 dengan tenggat sebulan. Syarat perlu proporsi prodi Unggul belum terpenuhi; dua prodi segera habis masa akreditasinya.', 'direktur@polban.akredia.test'],
+        'uin-suka' => ['UIN Sunan Kalijaga Yogyakarta', 'PTN Akademik (PTKIN) · jalur Unggul', 'Persiapan dini reakreditasi dengan IAPT 4.1. Syarat perlu terpenuhi; tim memperkuat analisis capaian kelulusan dan bukti dampak riset sebelum unggah September 2027.', 'rektor@uin-suka.akredia.test'],
     ];
 
     public function home(): View
@@ -80,10 +79,10 @@ class DemoController extends Controller
             ->values();
     }
 
-    /** Singkatan untuk pita tamu, misalnya "UNJ" atau "BINUS". */
+    /** Singkatan untuk pita tamu, misalnya "UNJ" atau "UIN SUKA". */
     public static function shortName(Institution $institution): string
     {
-        return mb_strtoupper($institution->slug);
+        return mb_strtoupper(str_replace('-', ' ', $institution->slug));
     }
 
     protected static function guestUser(): ?User

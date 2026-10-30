@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Enums\DocumentStatus;
 use App\Enums\LedState;
 use App\Enums\ProjectState;
-use App\Enums\TaskStatus;
 use App\Enums\Track;
 use App\Enums\WorkItemState;
 use App\Models\AcademicPeriod;
@@ -20,7 +19,6 @@ use App\Models\EmployerSatisfaction;
 use App\Models\EvidenceLink;
 use App\Models\FinancialAudit;
 use App\Models\Finding;
-use App\Models\GapItem;
 use App\Models\Indicator;
 use App\Models\Institution;
 use App\Models\InstrumentVariant;
@@ -28,7 +26,6 @@ use App\Models\InternalAudit;
 use App\Models\IpRight;
 use App\Models\Lecturer;
 use App\Models\LedComment;
-use App\Models\LedSection;
 use App\Models\LinkCheck;
 use App\Models\ManagementReview;
 use App\Models\Membership;
@@ -61,6 +58,7 @@ use App\Services\MetricEngine;
 use App\Services\ProjectWorkflow;
 use App\Services\ReadinessCalculator;
 use App\Support\CurrentInstitution;
+use App\Support\Labels;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -364,7 +362,9 @@ class DemoSeeder extends Seeder
         foreach ($this->programs as $key => $program) {
             $active = $program->demo_students;
             $level = $program->level;
-            $span = match ($level) { 'D3' => 3, 'S2' => 2, default => 4 };
+            $span = match ($level) {
+                'D3' => 3, 'S2' => 2, default => 4
+            };
 
             for ($y = 2018; $y <= $this->ts; $y++) {
                 $growth = 1 + ($y - $this->ts) * 0.035;
@@ -376,7 +376,9 @@ class DemoSeeder extends Seeder
                     'new_students' => $new, 'active_students' => $act,
                     'graduates' => (int) round($act / $span * (0.84 + mt_rand(0, 8) / 100)),
                     'students_outside_10sks' => (int) round($act * ($y >= 2021 ? 0.06 + ($y - 2021) * 0.02 : 0.01)),
-                    'avg_study_months' => match ($level) { 'D3' => 37 + mt_rand(0, 4), 'S2' => 26 + mt_rand(0, 4), default => 50 + mt_rand(0, 4) },
+                    'avg_study_months' => match ($level) {
+                        'D3' => 37 + mt_rand(0, 4), 'S2' => 26 + mt_rand(0, 4), default => 50 + mt_rand(0, 4)
+                    },
                     'avg_gpa' => round(3.2 + mt_rand(0, 30) / 100, 2),
                 ]);
             }
@@ -444,7 +446,7 @@ class DemoSeeder extends Seeder
                 Recognition::create([
                     'lecturer_id' => $permanentIds[array_rand($permanentIds)], 'year' => $y,
                     'title' => $p['recognitions'][array_rand($p['recognitions'])],
-                    'kind' => array_keys(\App\Support\Labels::RECOGNITIONS)[mt_rand(0, 5)],
+                    'kind' => array_keys(Labels::RECOGNITIONS)[mt_rand(0, 5)],
                     'level' => ['nasional', 'internasional', 'provinsi'][mt_rand(0, 2)],
                 ]);
             }
@@ -454,7 +456,9 @@ class DemoSeeder extends Seeder
                 ResearchGrant::create([
                     'year' => $y, 'category' => mt_rand(1, 100) <= 70 ? 'penelitian' : 'pkm', 'source' => $source,
                     'title' => ucfirst($prefix[array_rand($prefix)]).' '.$topics[array_rand($topics)],
-                    'amount' => match ($source) { 'internal' => mt_rand(10, 30), 'nasional' => mt_rand(40, 180), 'industri' => mt_rand(30, 120), 'internasional' => mt_rand(150, 400), default => mt_rand(5, 15) } * 1_000_000 * $p['grant_scale'],
+                    'amount' => match ($source) {
+                        'internal' => mt_rand(10, 30), 'nasional' => mt_rand(40, 180), 'industri' => mt_rand(30, 120), 'internasional' => mt_rand(150, 400), default => mt_rand(5, 15)
+                    } * 1_000_000 * $p['grant_scale'],
                 ]);
             }
         }
@@ -1034,7 +1038,9 @@ class DemoSeeder extends Seeder
 
         foreach ($decisions as $i => $row) {
             [$title, $when, $forum, $content] = $row;
-            $decidedBy = $row[4] ?? match ($forum) { 'yayasan' => 'Ketua Yayasan', 'mwa' => 'Ketua Majelis Wali Amanat', default => $this->leaderTitle };
+            $decidedBy = $row[4] ?? match ($forum) {
+                'yayasan' => 'Ketua Yayasan', 'mwa' => 'Ketua Majelis Wali Amanat', default => $this->leaderTitle
+            };
             $decision = Decision::create(['accreditation_project_id' => $project->id, 'title' => $title, 'decision_date' => now()->modify($when), 'forum' => $forum, 'decided_by' => $decidedBy, 'content' => $content]);
 
             if ($i >= 2) {

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\InstrumentVersion;
 use App\Models\User;
 use App\Services\InstrumentImporter;
-use App\Models\InstrumentVersion;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         }
 
         if (config('akredia.demo.enabled')) {
-            $this->call([UnjDemoSeeder::class, BinusDemoSeeder::class, PolbanDemoSeeder::class]);
+            $this->call([UnjDemoSeeder::class, UinSukaDemoSeeder::class]);
         }
     }
 }
